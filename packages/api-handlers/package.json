@@ -1,0 +1,17 @@
+{
+  "name": "@time-fit/api-handlers",
+  "version": "1.0.0",
+  "description": "API handlers for Time Fit projects",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "luxon": "^3.4.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

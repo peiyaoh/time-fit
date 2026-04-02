@@ -1,0 +1,17 @@
+{
+  "name": "@time-fit/task-management",
+  "version": "1.0.0",
+  "description": "Task management and execution utilities for Time Fit projects",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "luxon": "^3.4.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

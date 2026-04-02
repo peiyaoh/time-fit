@@ -1786,6 +1786,25 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@time-fit/api-handlers@workspace:*, @time-fit/api-handlers@workspace:packages/api-handlers":
+  version: 0.0.0-use.local
+  resolution: "@time-fit/api-handlers@workspace:packages/api-handlers"
+  dependencies:
+    "@types/node": "npm:^20.0.0"
+    luxon: "npm:^3.4.4"
+  languageName: unknown
+  linkType: soft
+
+"@time-fit/app-utils@workspace:*, @time-fit/app-utils@workspace:packages/app-utils":
+  version: 0.0.0-use.local
+  resolution: "@time-fit/app-utils@workspace:packages/app-utils"
+  dependencies:
+    "@types/node": "npm:^20.0.0"
+    luxon: "npm:^3.4.4"
+    voca: "npm:^1.4.1"
+  languageName: unknown
+  linkType: soft
+
 "@time-fit/condition-collection@workspace:packages/condition-collection":
   version: 0.0.0-use.local
   resolution: "@time-fit/condition-collection@workspace:packages/condition-collection"
@@ -1795,12 +1814,26 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@time-fit/data-source@workspace:packages/data-source":
+"@time-fit/database@workspace:*, @time-fit/database@workspace:packages/database":
   version: 0.0.0-use.local
-  resolution: "@time-fit/data-source@workspace:packages/data-source"
+  resolution: "@time-fit/database@workspace:packages/database"
   dependencies:
+    "@prisma/client": "npm:^6.5.0"
     cross-env: "npm:^7.0.3"
     jest: "npm:^29.7.0"
+    luxon: "npm:^3.6.0"
+    voca: "npm:^1.4.1"
+  languageName: unknown
+  linkType: soft
+
+"@time-fit/fitbit-integration@workspace:*, @time-fit/fitbit-integration@workspace:packages/fitbit-integration":
+  version: 0.0.0-use.local
+  resolution: "@time-fit/fitbit-integration@workspace:packages/fitbit-integration"
+  dependencies:
+    axios: "npm:^0.26.1"
+    cross-env: "npm:^7.0.3"
+    jest: "npm:^29.7.0"
+    luxon: "npm:^3.6.0"
   languageName: unknown
   linkType: soft
 
@@ -1813,12 +1846,47 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@time-fit/mongodb-helper@workspace:*, @time-fit/mongodb-helper@workspace:packages/mongodb-helper":
+  version: 0.0.0-use.local
+  resolution: "@time-fit/mongodb-helper@workspace:packages/mongodb-helper"
+  dependencies:
+    cross-env: "npm:^7.0.3"
+    jest: "npm:^29.7.0"
+    luxon: "npm:^3.6.0"
+    mongodb: "npm:^5.7.0"
+  languageName: unknown
+  linkType: soft
+
+"@time-fit/task-management@workspace:*, @time-fit/task-management@workspace:packages/task-management":
+  version: 0.0.0-use.local
+  resolution: "@time-fit/task-management@workspace:packages/task-management"
+  dependencies:
+    "@types/node": "npm:^20.0.0"
+    luxon: "npm:^3.4.4"
+  languageName: unknown
+  linkType: soft
+
 "@time-fit/time-engine@workspace:*, @time-fit/time-engine@workspace:packages/time-engine":
   version: 0.0.0-use.local
   resolution: "@time-fit/time-engine@workspace:packages/time-engine"
   dependencies:
     cross-env: "npm:^7.0.3"
     jest: "npm:^29.7.0"
+  languageName: unknown
+  linkType: soft
+
+"@time-fit/web-components@workspace:*, @time-fit/web-components@workspace:packages/web-components":
+  version: 0.0.0-use.local
+  resolution: "@time-fit/web-components@workspace:packages/web-components"
+  dependencies:
+    "@types/node": "npm:^20.0.0"
+    "@types/react": "npm:^18.0.0"
+    "@types/react-dom": "npm:^18.0.0"
+    react: "npm:^18.0.0"
+    react-dom: "npm:^18.0.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
   languageName: unknown
   linkType: soft
 
@@ -1913,10 +1981,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node@npm:^20.0.0":
+  version: 20.19.37
+  resolution: "@types/node@npm:20.19.37"
+  dependencies:
+    undici-types: "npm:~6.21.0"
+  checksum: 10c0/8420353aee776ae5c1e9720058949909a0e908fa2af85501e9db2645bb9f9acd7d767890f8aaee34d375e6f8b5f550a9a169e908d2d8cf7d5daf63dce64092a0
+  languageName: node
+  linkType: hard
+
 "@types/parse-json@npm:^4.0.0":
   version: 4.0.2
   resolution: "@types/parse-json@npm:4.0.2"
   checksum: 10c0/b1b863ac34a2c2172fbe0807a1ec4d5cb684e48d422d15ec95980b81475fac4fdb3768a8b13eef39130203a7c04340fc167bae057c7ebcafd7dec9fe6c36aeb1
+  languageName: node
+  linkType: hard
+
+"@types/prop-types@npm:*":
+  version: 15.7.15
+  resolution: "@types/prop-types@npm:15.7.15"
+  checksum: 10c0/b59aad1ad19bf1733cf524fd4e618196c6c7690f48ee70a327eb450a42aab8e8a063fbe59ca0a5701aebe2d92d582292c0fb845ea57474f6a15f6994b0e260b2
   languageName: node
   linkType: hard
 
@@ -1927,12 +2011,31 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-dom@npm:^18.0.0":
+  version: 18.3.7
+  resolution: "@types/react-dom@npm:18.3.7"
+  peerDependencies:
+    "@types/react": ^18.0.0
+  checksum: 10c0/8bd309e2c3d1604a28a736a24f96cbadf6c05d5288cfef8883b74f4054c961b6b3a5e997fd5686e492be903c8f3380dba5ec017eff3906b1256529cd2d39603e
+  languageName: node
+  linkType: hard
+
 "@types/react-transition-group@npm:^4.4.10, @types/react-transition-group@npm:^4.4.5":
   version: 4.4.12
   resolution: "@types/react-transition-group@npm:4.4.12"
   peerDependencies:
     "@types/react": "*"
   checksum: 10c0/0441b8b47c69312c89ec0760ba477ba1a0808a10ceef8dc1c64b1013ed78517332c30f18681b0ec0b53542731f1ed015169fed1d127cc91222638ed955478ec7
+  languageName: node
+  linkType: hard
+
+"@types/react@npm:^18.0.0":
+  version: 18.3.28
+  resolution: "@types/react@npm:18.3.28"
+  dependencies:
+    "@types/prop-types": "npm:*"
+    csstype: "npm:^3.2.2"
+  checksum: 10c0/683e19cd12b5c691215529af2e32b5ffbaccae3bf0ba93bfafa0e460e8dfee18423afed568be2b8eadf4b837c3749dd296a4f64e2d79f68fa66962c05f5af661
   languageName: node
   linkType: hard
 
@@ -2948,6 +3051,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"csstype@npm:^3.2.2":
+  version: 3.2.3
+  resolution: "csstype@npm:3.2.3"
+  checksum: 10c0/cd29c51e70fa822f1cecd8641a1445bed7063697469d35633b516e60fe8c1bde04b08f6c5b6022136bb669b64c63d4173af54864510fbb4ee23281801841a3ce
+  languageName: node
+  linkType: hard
+
 "csv-parser@npm:^3.0.0":
   version: 3.2.0
   resolution: "csv-parser@npm:3.2.0"
@@ -3870,8 +3980,15 @@ __metadata:
     "@mui/x-date-pickers": "npm:^5.0.3"
     "@prisma/client": "npm:6.10.0"
     "@time-fit/action-collection": "workspace:*"
+    "@time-fit/api-handlers": "workspace:*"
+    "@time-fit/app-utils": "workspace:*"
+    "@time-fit/database": "workspace:*"
+    "@time-fit/fitbit-integration": "workspace:*"
     "@time-fit/helper": "workspace:*"
+    "@time-fit/mongodb-helper": "workspace:*"
+    "@time-fit/task-management": "workspace:*"
     "@time-fit/time-engine": "workspace:*"
+    "@time-fit/web-components": "workspace:*"
     axios: "npm:^0.26.1"
     bcrypt: "npm:^5.1.0"
     cross-env: "npm:^7.0.3"
@@ -5657,6 +5774,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"luxon@npm:^3.4.4":
+  version: 3.7.2
+  resolution: "luxon@npm:3.7.2"
+  checksum: 10c0/ed8f0f637826c08c343a29dd478b00628be93bba6f068417b1d8896b61cb61c6deacbe1df1e057dbd9298334044afa150f9aaabbeb3181418ac8520acfdc2ae2
+  languageName: node
+  linkType: hard
+
 "luxon@npm:^3.5.0, luxon@npm:^3.6.0":
   version: 3.6.0
   resolution: "luxon@npm:3.6.0"
@@ -6793,6 +6917,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-dom@npm:^18.0.0":
+  version: 18.3.1
+  resolution: "react-dom@npm:18.3.1"
+  dependencies:
+    loose-envify: "npm:^1.1.0"
+    scheduler: "npm:^0.23.2"
+  peerDependencies:
+    react: ^18.3.1
+  checksum: 10c0/a752496c1941f958f2e8ac56239172296fcddce1365ce45222d04a1947e0cc5547df3e8447f855a81d6d39f008d7c32eab43db3712077f09e3f67c4874973e85
+  languageName: node
+  linkType: hard
+
 "react-is@npm:^16.13.1, react-is@npm:^16.7.0":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
@@ -6848,6 +6984,15 @@ __metadata:
     loose-envify: "npm:^1.1.0"
     object-assign: "npm:^4.1.1"
   checksum: 10c0/07ae8959acf1596f0550685102fd6097d461a54a4fd46a50f88a0cd7daaa97fdd6415de1dcb4bfe0da6aa43221a6746ce380410fa848acc60f8ac41f6649c148
+  languageName: node
+  linkType: hard
+
+"react@npm:^18.0.0":
+  version: 18.3.1
+  resolution: "react@npm:18.3.1"
+  dependencies:
+    loose-envify: "npm:^1.1.0"
+  checksum: 10c0/283e8c5efcf37802c9d1ce767f302dd569dd97a70d9bb8c7be79a789b9902451e0d16334b05d73299b20f048cbc3c7d288bbbde10b701fa194e2089c237dbea3
   languageName: node
   linkType: hard
 
@@ -7131,6 +7276,15 @@ __metadata:
     loose-envify: "npm:^1.1.0"
     object-assign: "npm:^4.1.1"
   checksum: 10c0/b0982e4b0f34f4ffa4f2f486161c0fd9ce9b88680b045dccbf250eb1aa4fd27413570645455187a83535e2370f5c667a251045547765408492bd883cbe95fcdb
+  languageName: node
+  linkType: hard
+
+"scheduler@npm:^0.23.2":
+  version: 0.23.2
+  resolution: "scheduler@npm:0.23.2"
+  dependencies:
+    loose-envify: "npm:^1.1.0"
+  checksum: 10c0/26383305e249651d4c58e6705d5f8425f153211aef95f15161c151f7b8de885f24751b377e4a0b3dd42cce09aad3f87a61dab7636859c0d89b7daf1a1e2a5c78
   languageName: node
   linkType: hard
 
@@ -8093,6 +8247,13 @@ __metadata:
   version: 6.20.0
   resolution: "undici-types@npm:6.20.0"
   checksum: 10c0/68e659a98898d6a836a9a59e6adf14a5d799707f5ea629433e025ac90d239f75e408e2e5ff086afc3cace26f8b26ee52155293564593fbb4a2f666af57fc59bf
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.21.0":
+  version: 6.21.0
+  resolution: "undici-types@npm:6.21.0"
+  checksum: 10c0/c01ed51829b10aa72fc3ce64b747f8e74ae9b60eafa19a7b46ef624403508a54c526ffab06a14a26b3120d055e1104d7abe7c9017e83ced038ea5cf52f8d5e04
   languageName: node
   linkType: hard
 
