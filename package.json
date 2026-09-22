@@ -11,7 +11,7 @@
     "index": "node ./src/index.js",
     "example1": "node ./apps/take-a-break/index.js",
     "example2": "node ./apps/fitbit-break/index.js",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
+    "test": "cross-env TZ=America/New_York NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

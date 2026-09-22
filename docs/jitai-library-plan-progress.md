@@ -169,5 +169,9 @@ Runs 3–5 were self-critiqued (Codex unavailable).
   smoke jobs. The root schema is the one the local client (and so the passing tests) was
   generated from; `apps/fitbit-break/prisma/schema.prisma` is an older, divergent copy that
   Stage D quarantines.
-- Verified locally: `apps/fitbit-break` `next build` passes with a generated client. It
-  still needs confirmation from a real CI run after pushing.
+- Result on push (`4737a9c`): both smoke jobs and the packed-quickstart job passed, and
+  Test reached 405/406. The last failure was the legacy `checkpoint-cron` test, which passes
+  only when the machine's zone is New York: the legacy executor evaluates cron in the
+  server's zone (ADR 0006 legacy defect #1), and CI runs in UTC. Per the decision not to fix
+  legacy code, the root `yarn test` script pins `TZ=America/New_York`. The `@time-fit/core`
+  coverage step still runs in CI's native UTC, and core also passes under Asia/Tokyo.

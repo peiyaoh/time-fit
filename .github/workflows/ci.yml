@@ -30,6 +30,10 @@ jobs:
         run: yarn prisma generate --schema prisma/schema.prisma
 
       - name: Run tests
+        # The root script pins TZ=America/New_York: the legacy executor evaluates cron in the
+        # server's zone (ADR 0006, legacy defect #1) and its tests assume New York. The core
+        # coverage step below runs in CI's native UTC, so @time-fit/core is still checked
+        # against a zone that differs from its test participants'.
         run: yarn test
 
       - name: Check @time-fit/core dependencies and imports
