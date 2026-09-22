@@ -135,3 +135,39 @@ Runs 3–5 were self-critiqued (Codex unavailable).
   to import statements).
 - Clarifications recorded as ADR 0008.
 - Next: Stage C2 (engine, memory store, conformance suite) against `engine-scenarios.json`.
+
+## Stage C2: Engine (2026-09-22)
+- `packages/core/src/engine/`:
+  - `config`: validates everything up front, and `EngineConfigError` lists every problem;
+  - `tick`: window, missed-window gaps, task loading, paged participants with bounded concurrency;
+  - `schedule`: due occurrences plus preference resolution;
+  - `decision`: the eligibility → availability → claim → execute → complete/fail pipeline;
+  - `plugins`: timeout, `AbortSignal`, throw containment, 8 KB payload cap;
+  - `logging`: correlation-bound, failure-proof logger;
+  - `createTimeEngine`: `tick` / `start` / `stop`, no globals.
+- Built-in `time-window` condition. `@time-fit/core/memory` (bounded retention) and
+  `@time-fit/core/testing` (10 runner-agnostic conformance checks).
+- All 18 engine scenarios pass (two engines ticking at once deliver once; edit
+  mid-window does not re-send; missed windows are recorded; Detroit weekday cron fires on
+  Friday evening). A throwaway sanity test confirmed the harness observes real state.
+- 318 core tests at 100% coverage; full repo suite passes. The packed-tarball quickstart
+  passes locally (real `npm install` into an empty directory).
+- Bugs caught while implementing: a non-array `conditions` crashed config validation with
+  a raw TypeError (it now reports `invalid-conditions`); an aborted tick dropped counts for
+  work already done (they are kept now). Two branches that could never run were removed:
+  the timer re-arm guard and `unref?.`.
+- Clarifications recorded as ADR 0009.
+- Next: Stage D (quarantine legacy into `contrib/legacy`, fresh `@time-fit/storage-prisma`)
+  and Stage E (integrations; take-a-break moves to core). These can run in parallel.
+
+## CI finding (2026-09-22)
+- **CI has never passed on `refactor-1`.** Every run, starting at `dea7be2` before this
+  session, failed because CI never ran `prisma generate`: `@prisma/client` throws at import
+  until a client is generated, and developer machines already had one. The refactor plan's
+  earlier "CI green" status was true locally only.
+- Fix: a `yarn prisma generate --schema prisma/schema.prisma` step in the test and both
+  smoke jobs. The root schema is the one the local client (and so the passing tests) was
+  generated from; `apps/fitbit-break/prisma/schema.prisma` is an older, divergent copy that
+  Stage D quarantines.
+- Verified locally: `apps/fitbit-break` `next build` passes with a generated client. It
+  still needs confirmation from a real CI run after pushing.

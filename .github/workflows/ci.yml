@@ -23,6 +23,12 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      - name: Generate Prisma client
+        # The legacy packages and apps import @prisma/client, which throws at import time
+        # until a client is generated. Local machines already had one, so CI failed here
+        # from its first run. The root schema matches the client local tests use.
+        run: yarn prisma generate --schema prisma/schema.prisma
+
       - name: Run tests
         run: yarn test
 
@@ -31,6 +37,20 @@ jobs:
 
       - name: "@time-fit/core coverage (100% required)"
         run: yarn workspace @time-fit/core test:coverage
+
+  packed-quickstart:
+    name: "@time-fit/core packed install + quickstart"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Pack core, install into an empty directory, run examples/quickstart
+        # No workspace install on purpose: only the tarball's declared dependencies exist.
+        run: ./scripts/verify-packed-quickstart.sh
 
   smoke-fitbit-break:
     name: Smoke build - fitbit-break (Next.js)
@@ -47,6 +67,12 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Generate Prisma client
+        # The legacy packages and apps import @prisma/client, which throws at import time
+        # until a client is generated. Local machines already had one, so CI failed here
+        # from its first run. The root schema matches the client local tests use.
+        run: yarn prisma generate --schema prisma/schema.prisma
 
       - name: Build apps/fitbit-break
         working-directory: apps/fitbit-break
@@ -72,6 +98,12 @@ jobs:
 
       - name: Install dependencies
         run: yarn install --immutable
+
+      - name: Generate Prisma client
+        # The legacy packages and apps import @prisma/client, which throws at import time
+        # until a client is generated. Local machines already had one, so CI failed here
+        # from its first run. The root schema matches the client local tests use.
+        run: yarn prisma generate --schema prisma/schema.prisma
 
       - name: Boot apps/take-a-break briefly
         # index.js calls TimeEngine.start(), which runs an in-process scheduler

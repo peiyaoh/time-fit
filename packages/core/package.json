@@ -6,7 +6,9 @@
   "type": "module",
   "license": "MIT",
   "exports": {
-    ".": "./src/index.js"
+    ".": "./src/index.js",
+    "./memory": "./src/memory/index.js",
+    "./testing": "./src/testing/index.js"
   },
   "files": [
     "src"

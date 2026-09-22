@@ -266,6 +266,11 @@ ported per the §3.6 ADR, not imported).
 kernel; no runtime deps beyond {luxon, cron-parser, seedrandom}.
 
 ### Stage C2: Engine
+> **Status (2026-09-22): done.** `createTimeEngine` (`src/engine/`), built-in
+> `time-window`, `@time-fit/core/memory`, and `@time-fit/core/testing`. All 18
+> `engine-scenarios.json` cases pass. The memory store passes the conformance suite. Core has
+> 318 tests at 100% coverage. `examples/quickstart` runs from an `npm pack` tarball in an empty
+> directory (`scripts/verify-packed-quickstart.sh`, new CI job). Clarifications are in ADR 0009.
 **Change:** `createTimeEngine` (tick loop, in-flight guard, pagination, concurrency
 parameter default 1, `storage`/static-`tasks` config, built-in `time-window` condition,
 `group`/`phase` eligibility). The memory store keeps records only inside a retention window

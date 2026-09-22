@@ -15,6 +15,7 @@ and an implementation is correct when every fixture passes.
 | [0006](0006-task-spec.md) | Task spec shape, validation limits, and mapping from the legacy spec |
 | [0007](0007-packaging-and-names.md) | Package layout, names, runtime targets |
 | [0008](0008-stage-c1-clarifications.md) | Clarifications found while implementing the kernel (ids, extra error codes, instants, paths) |
+| [0009](0009-stage-c2-engine-clarifications.md) | Clarifications found while implementing the engine (port payloads, tick semantics, counters, memory/testing APIs) |
 
 **Status of all ADRs: Accepted (2026-09-22).** To change an accepted decision, add a new
 ADR that supersedes it. Do not rewrite an accepted ADR.

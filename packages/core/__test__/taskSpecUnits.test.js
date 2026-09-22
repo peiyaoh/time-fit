@@ -122,10 +122,10 @@ describe("outcomes and plugin params", () => {
 
 test("public entry point exposes the kernel", () => {
   expect(Object.keys(core).sort()).toEqual([
-    "DECISION_ID_VERSION", "canonicalJson", "checkpointKind", "computeDecisionId", "computeTaskVersion",
-    "decisionSubject", "deriveSeed", "err", "evaluateEligibility", "evaluatePrecondition", "isValidTimeZone",
+    "DECISION_ID_VERSION", "DECISION_RECORD_SCHEMA", "EngineConfigError", "canonicalJson", "checkpointKind",
+    "computeDecisionId", "computeTaskVersion", "createTimeEngine", "decisionSubject", "deriveSeed", "err", "evaluateEligibility", "evaluatePrecondition", "isValidTimeZone",
     "localDatesForWindow", "normalizeCheckpoint", "occurrences", "ok", "randomize", "readOwnPath",
-    "seededRandom", "selectArm", "validateEligibility", "validateOutcomes", "validatePrecondition",
+    "seededRandom", "selectArm", "timeWindowCondition", "validateEligibility", "validateOutcomes", "validatePrecondition",
     "validateTaskSet", "validateTaskSpec",
   ]);
 });
