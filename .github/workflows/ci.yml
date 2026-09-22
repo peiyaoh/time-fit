@@ -26,6 +26,12 @@ jobs:
       - name: Run tests
         run: yarn test
 
+      - name: Check @time-fit/core dependencies and imports
+        run: node scripts/check-core-dependencies.mjs
+
+      - name: "@time-fit/core coverage (100% required)"
+        run: yarn workspace @time-fit/core test:coverage
+
   smoke-fitbit-break:
     name: Smoke build - fitbit-break (Next.js)
     runs-on: ubuntu-latest

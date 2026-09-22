@@ -1711,11 +1711,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@time-fit/core@workspace:packages/core":
+  version: 0.0.0-use.local
+  resolution: "@time-fit/core@workspace:packages/core"
+  dependencies:
+    cron-parser: "npm:^5.0.6"
+    cross-env: "npm:^7.0.3"
+    jest: "npm:^29.7.0"
+    luxon: "npm:^3.6.0"
+    seedrandom: "npm:^3.0.5"
+  languageName: unknown
+  linkType: soft
+
 "@time-fit/database@workspace:*, @time-fit/database@workspace:packages/database":
   version: 0.0.0-use.local
   resolution: "@time-fit/database@workspace:packages/database"
   dependencies:
     "@prisma/client": "npm:6.10.0"
+    "@time-fit/helper": "workspace:*"
     cross-env: "npm:^7.0.3"
     jest: "npm:^29.7.0"
     luxon: "npm:^3.6.0"

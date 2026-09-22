@@ -240,7 +240,7 @@ It ships with Stage B.
 
 ### Stage B: Contract and names
 > **Status (2026-09-22): done except the npm scope (maintainer action).** ADRs 0001–0007
-> are in [`adr/`](adr/), and fixtures are in [`adr/fixtures/`](adr/fixtures/). The CI smoke fix
+> are in [`adr/`](adr/), and fixtures are in [`packages/core/__test__/fixtures/`](../packages/core/__test__/fixtures/) (moved there in Stage C1). The CI smoke fix
 > is in `.github/workflows/ci.yml`. **The ADRs are now the source of truth for §3**; where
 > they differ from §3 (below), the ADR wins.
 **Change:** ADRs for §3.1–3.6. Fixtures: DST gap/fold, date-line, invalid zone,
@@ -253,6 +253,11 @@ path never executed (#12).
 **Acceptance:** ADRs merged; fixtures committed with expected outputs; npm scope owned.
 
 ### Stage C1: Pure kernel
+> **Status (2026-09-22): done.** `packages/core` (private until Stage G) has 11 pure
+> modules and 206 tests. All Stage B fixtures they cover pass (calendar, identity,
+> task-spec validation), with 100% statement/branch/function/line coverage enforced in CI.
+> `scripts/check-core-dependencies.mjs` checks both the manifest and source imports.
+> Clarifications are in ADR 0008. `engine-scenarios.json` is for C2.
 **Change:** `packages/core` pure modules with no I/O and no timers: task-spec validation
 (typed errors), `occurrences(checkpoint, zone, window)`, `decisionId`/`taskVersion`,
 seeded randomization, eligibility and precondition-tree evaluation (legacy semantics

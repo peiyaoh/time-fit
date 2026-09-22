@@ -1,7 +1,7 @@
 # Contract fixtures
 
-These are the executable form of ADRs 0001–0007. Stage C1 moves them to
-`packages/core/test/fixtures/` (keeping this README), and core's tests load every case.
+These are the executable form of ADRs 0001–0007 (`docs/adr/`). They live in
+`packages/core/__test__/fixtures/`, and core's tests load every case.
 An implementation that fails a fixture is wrong; if a fixture turns out to be wrong,
 change it together with an ADR update.
 

@@ -116,3 +116,22 @@ Runs 3–5 were self-critiqued (Codex unavailable).
 - CI: take-a-break smoke now waits until second ≤ 50 (fixes the verified ~1-in-12 flake).
 - Open: `@time-fit` npm scope (maintainer action; fallback names in ADR 0007).
 - Next: Stage C1 (pure kernel) against these fixtures.
+
+## Stage C1: Pure kernel (2026-09-22)
+- New `packages/core` (`@time-fit/core`, `private: true` until Stage G). Modules: `result`,
+  `timeZone`, `canonicalJson`, `identity`, `randomization`, `checkpoint`, `eligibility`,
+  `precondition`, `outcomes`, `pluginParams`, `taskSpec`; public entry `src/index.js`.
+- Fixtures moved from `docs/adr/fixtures/` to `packages/core/__test__/fixtures/`. All 14
+  calendar cases, 7 invalid checkpoints, 8 zones, the identity/seed/arm goldens, and all 24
+  validation cases pass. Full repo suite: 26 suites / 294 tests.
+- Coverage 100% (statements, branches, functions, lines), enforced by the core jest
+  config and a CI step.
+- CI: `scripts/check-core-dependencies.mjs` fails on any core runtime dependency outside
+  {cron-parser, luxon, seedrandom} **and** on any bare import in `src/` outside that set.
+  The source scan closes the yarn-hoisting gap.
+- Bugs caught while implementing: `Date.parse` accepts Feb 30 (switched to Luxon); a
+  realm-dependent plain-object check broke under Jest's VM (now checks prototype shape);
+  an early draft of the dependency check matched "active-from" in a comment (now anchored
+  to import statements).
+- Clarifications recorded as ADR 0008.
+- Next: Stage C2 (engine, memory store, conformance suite) against `engine-scenarios.json`.
