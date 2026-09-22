@@ -1,8 +1,8 @@
-import prisma from "../../lib/prisma";
+import prisma from "@time-fit/database/prisma.js";
 import { DateTime } from "luxon";
-import TaskExecutor from "../../lib/TaskExecutor.mjs";
-import GeneralUtility from "../../lib/GeneralUtility.mjs";
-import DatabaseUtility from "../../lib/DatabaseUtility.mjs";
+import TaskExecutor from "@time-fit/time-engine/TaskExecutor.js";
+import GeneralUtility from "@time-fit/app-utils/GeneralUtility.js";
+import DatabaseUtility from "@time-fit/database/DatabaseUtility.js";
 
 function replacer(key, value) {
     if (typeof value === "Date") {

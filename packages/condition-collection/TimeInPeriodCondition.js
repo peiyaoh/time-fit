@@ -1,4 +1,4 @@
-import DateTimeHelper from "../helper/DateTimeHelper.js";
+import DateTimeHelper from "@time-fit/helper/DateTimeHelper.js";
 
 export default class TimeInPeriodCondition {
   constructor() {}

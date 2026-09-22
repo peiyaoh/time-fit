@@ -1,9 +1,10 @@
 import { DateTime, Interval } from "luxon";
-import DateTimeHelper from "../helper/DateTimeHelper.js";
-import RandomizationHelper from "../helper/RandomizationHelper.js";
-import BooleanHelper from "../helper/BooleanHelper.js";
-import ObjectHelper from "../helper/ObjectHelper.js";
-import UserInfoHelper from "../helper/UserInfoHelper.js";
+import DateTimeHelper from "@time-fit/helper/DateTimeHelper.js";
+import BooleanHelper from "@time-fit/helper/BooleanHelper.js";
+import ObjectHelper from "@time-fit/helper/ObjectHelper.js";
+import UserInfoHelper from "@time-fit/helper/UserInfoHelper.js";
+import { hrtime } from "node:process";
+import seedrandom from "seedrandom";
 
 export default class TaskExecutor {
   taskSpec;
@@ -202,9 +203,17 @@ export default class TaskExecutor {
     return record;
   }
 
+  // Inlined from packages/helper/RandomizationHelper.js: this was the only call site of
+  // getRandomNumber() in the whole repo, so TaskExecutor no longer needs to depend on all
+  // of @time-fit/helper for it.
+  static getRandomNumber(seed) {
+    const mySeed = seed == undefined ? hrtime() : seed;
+    return seedrandom(mySeed)();
+  }
+
   static randomizeSelection(choiceList) {
     let theChoice = undefined;
-    const randNumber = RandomizationHelper.getRandomNumber(); // Math.random();
+    const randNumber = TaskExecutor.getRandomNumber(); // Math.random();
 
     let allowance = randNumber;
 

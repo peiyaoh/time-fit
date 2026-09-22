@@ -1,4 +1,4 @@
-import ObjectHelper from "../helper/ObjectHelper.js";
+import ObjectHelper from "@time-fit/helper/ObjectHelper.js";
 
 export default class UserInfoCondition {
   constructor() {}

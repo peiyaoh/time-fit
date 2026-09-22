@@ -1,6 +1,6 @@
-import DateTimeHelper from "../../../helper/DateTimeHelper.js";
-import UserInfoHelper from "../../../helper/UserInfoHelper.js";
-import { getPrismaClient } from "../../../helper/prisma.js";
+import DateTimeHelper from "@time-fit/helper/DateTimeHelper.js";
+import UserInfoHelper from "@time-fit/helper/UserInfoHelper.js";
+import { getPrismaClient } from "@time-fit/database/prisma.js";
 import FitbitDataHelper from "./FitbitDataHelper.js";
 
 export default class FitbitUpdateHelper {

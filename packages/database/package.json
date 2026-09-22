@@ -8,7 +8,7 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@prisma/client": "^6.5.0",
+    "@prisma/client": "6.10.0",
     "luxon": "^3.6.0",
     "voca": "^1.4.1"
   },

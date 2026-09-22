@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main, refactor-1]
+  pull_request:
+    branches: [main, refactor-1]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (Yarn 4 / Berry)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run tests
+        run: yarn test
+
+  smoke-fitbit-break:
+    name: Smoke build - fitbit-break (Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (Yarn 4 / Berry)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Build apps/fitbit-break
+        working-directory: apps/fitbit-break
+        # Dummy env values so `next build` can statically evaluate config/imports
+        # that reference process.env; no live Prisma/Twilio/Fitbit credentials
+        # are used or required for a build-only smoke check.
+        env:
+          DATABASE_URL: "postgresql://user:pass@localhost:5432/db"
+        run: yarn build
+
+  smoke-take-a-break:
+    name: Smoke boot - take-a-break
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (Yarn 4 / Berry)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Boot apps/take-a-break briefly
+        # index.js calls TimeEngine.start(), which runs an in-process scheduler
+        # that never exits on its own. A short-lived run that doesn't throw
+        # during module import/registration is treated as a passing smoke test;
+        # `timeout` exit code 124 (timed out, i.e. it was still running) is
+        # accepted as success, any other non-zero exit fails the job.
+        run: |
+          set +e
+          timeout 5s node apps/take-a-break/index.js
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
+            echo "take-a-break/index.js exited with unexpected status $status"
+            exit 1
+          fi

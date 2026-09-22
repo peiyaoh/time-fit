@@ -1,4 +1,4 @@
-import { getPrismaClient } from "./prisma.js";
+import { getPrismaClient } from "@time-fit/database/prisma.js";
 export default class LogHelper {
   constructor() {}
 

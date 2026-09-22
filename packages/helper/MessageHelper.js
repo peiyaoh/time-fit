@@ -1,4 +1,4 @@
-import {getPrismaClient} from "./prisma.js";
+import {getPrismaClient} from "@time-fit/database/prisma.js";
 import RandomizationHelper from "./RandomizationHelper.js";
 
 export default class MessageHelper {

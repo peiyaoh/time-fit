@@ -1,10 +1,14 @@
-import DateTimeHelper from "../../../helper/DateTimeHelper.js";
-import UserInfoHelper from "../../../helper/UserInfoHelper.js";
-import UpdateDiffHelper from "../../../helper/UpdateDiffHelper.js";
-import DataRecordHelper from "../../DataRecordHelper.js";
+import DateTimeHelper from "@time-fit/helper/DateTimeHelper.js";
+import UserInfoHelper from "@time-fit/helper/UserInfoHelper.js";
+import UpdateDiffHelper from "@time-fit/helper/UpdateDiffHelper.js";
+// NOTE: "../../DataRecordHelper.js" never existed in this repo. The only method it called,
+// getObjectAsJSONDiff(oldObj, newObj), matches @time-fit/app-utils/GeneralUtility.js's
+// static method of the same name/signature exactly, so this is repointed there. Flagged in
+// the Stage 1a report for confirmation rather than assumed silently.
+import GeneralUtility from "@time-fit/app-utils/GeneralUtility.js";
 import FitbitAPIHelper from "./FitbitAPIHelper.js";
 
-import { getPrismaClient } from "../../../helper/prisma.js";
+import { getPrismaClient } from "@time-fit/database/prisma.js";
 import { DateTime } from "luxon";
 
 export default class FitbitDataHelper {
@@ -293,9 +297,9 @@ export default class FitbitDataHelper {
         let documentDiff = {};
 
         if (oldDocument == null) {
-          documentDiff = DataRecordHelper.getObjectAsJSONDiff({}, newDocument);
+          documentDiff = GeneralUtility.getObjectAsJSONDiff({}, newDocument);
         } else {
-          documentDiff = DataRecordHelper.getObjectAsJSONDiff(
+          documentDiff = GeneralUtility.getObjectAsJSONDiff(
             oldDocument,
             newDocument
           );
@@ -558,9 +562,9 @@ export default class FitbitDataHelper {
         let documentDiff = {};
 
         if (oldDocument == null) {
-          documentDiff = DataRecordHelper.getObjectAsJSONDiff({}, newDocument);
+          documentDiff = GeneralUtility.getObjectAsJSONDiff({}, newDocument);
         } else {
-          documentDiff = DataRecordHelper.getObjectAsJSONDiff(
+          documentDiff = GeneralUtility.getObjectAsJSONDiff(
             oldDocument,
             newDocument
           );

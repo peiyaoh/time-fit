@@ -1,6 +1,6 @@
 import { MongoMemoryServer, MongoMemoryReplSet } from "mongodb-memory-server";
 import { execSync } from "child_process";
-import { getPrismaClient, reinitPrismaClient } from "../prisma.js";
+import { getPrismaClient, reinitPrismaClient } from "@time-fit/database/prisma.js";
 import EventHelper from "../EventHelper.js";
 
 let mongod;

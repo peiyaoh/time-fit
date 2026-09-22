@@ -1,5 +1,5 @@
 import { MongoMemoryReplSet } from "mongodb-memory-server";
-import { reinitPrismaClient } from "../prisma.js";
+import { reinitPrismaClient } from "@time-fit/database/prisma.js";
 import MessageHelper from "../MessageHelper.js";
 
 let mongod;

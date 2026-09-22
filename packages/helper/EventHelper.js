@@ -1,4 +1,4 @@
-import {getPrismaClient} from "./prisma.js";
+import {getPrismaClient} from "@time-fit/database/prisma.js";
 
 // To DO: break this into multiple files and remove it.
 export default class EventHelper {

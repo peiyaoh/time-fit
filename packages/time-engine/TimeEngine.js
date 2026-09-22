@@ -1,10 +1,10 @@
 import { DateTime } from "luxon";
 import TaskExecutor from "./TaskExecutor.js";
-import TaskHelper from "../helper/TaskHelper.js";
-import UserInfoHelper from "../helper/UserInfoHelper.js";
-import EventHelper from "../helper/EventHelper.js";
-import TaskLogHelper from "../helper/TaskLogHelper.js";
-import TaskGeneratorHelper from "../helper/TaskGeneratorHelper.js";
+import TaskHelper from "@time-fit/helper/TaskHelper.js";
+import UserInfoHelper from "@time-fit/helper/UserInfoHelper.js";
+import EventHelper from "@time-fit/helper/EventHelper.js";
+import TaskLogHelper from "@time-fit/helper/TaskLogHelper.js";
+import TaskGeneratorHelper from "@time-fit/helper/TaskGeneratorHelper.js";
 
 export default class TimeEngine {
   static scheduler = undefined;

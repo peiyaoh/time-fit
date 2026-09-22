@@ -1,6 +1,6 @@
 import FitbitAPIHelper from "./FitbitAPIHelper";
 import FitbitCredentialHelper from "./FitbitCredentialHelper";
-import { getPrismaClient } from "../../../helper/prisma.js";
+import { getPrismaClient } from "@time-fit/database/prisma.js";
 
 export default class FitbitSubscriptionHelper {
   constructor() {}

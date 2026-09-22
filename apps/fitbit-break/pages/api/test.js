@@ -1,7 +1,7 @@
-import prisma from "../../lib/prisma";
+import prisma from "@time-fit/database/prisma.js";
 import { getSession } from "next-auth/react";
 import { DateTime } from "luxon";
-import MongoDBHelper from "../../lib/MongoDBHelper";
+import MongoDBHelper from "@time-fit/mongodb-helper/MongoDBHelper.js";
 
 const adminUsernameList = ["test1", "test2", "test3", "test4"];
 

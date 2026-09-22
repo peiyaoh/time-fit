@@ -9,8 +9,8 @@
     "test": "node --test"
   },
   "dependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "@time-fit/helper": "workspace:*",
+    "luxon": "^3.6.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

@@ -9,6 +9,8 @@
     "test": "node --test"
   },
   "dependencies": {
+    "@time-fit/helper": "workspace:*",
+    "json-difference": "^1.16.1",
     "luxon": "^3.4.4",
     "voca": "^1.4.1"
   },

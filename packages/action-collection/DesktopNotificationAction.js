@@ -1,4 +1,4 @@
-import DesktopNotificationHelper from "../helper/DesktopNotificationHelper.js";
+import DesktopNotificationHelper from "@time-fit/helper/DesktopNotificationHelper.js";
 
 export default class DesktopNotificationAction {
   #title="TimeFit";

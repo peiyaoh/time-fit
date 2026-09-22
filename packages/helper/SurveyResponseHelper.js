@@ -1,4 +1,4 @@
-import { getPrismaClient } from "./prisma.js";
+import { getPrismaClient } from "@time-fit/database/prisma.js";
 import { DateTime } from "luxon";
 export default class SurveyResponseHelper {
   constructor() {}

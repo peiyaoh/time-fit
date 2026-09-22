@@ -2,7 +2,7 @@
   "name": "time-fit",
   "version": "0.1.0",
   "type": "module",
-  "private": true,
+  "license": "MIT",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -12,17 +12,6 @@
     "example1": "node ./apps/take-a-break/index.js",
     "example2": "node ./apps/fitbit-break/index.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
-  },
-  "dependencies": {
-    "@prisma/client": "^6.5.0",
-    "cron-parser": "^5.0.6",
-    "json-difference": "^1.16.1",
-    "luxon": "^3.6.0",
-    "mongodb-memory-server": "^10.1.4",
-    "node-notifier": "^10.0.1",
-    "seedrandom": "^3.0.5",
-    "twilio": "^5.5.1",
-    "voca": "^1.4.1"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import UserInfoHelper from "../../../helper/UserInfoHelper";
+import UserInfoHelper from "@time-fit/helper/UserInfoHelper.js";
 import FitbitAPIHelper from "./FitbitAPIHelper";
 import { inspect } from "util";
 
