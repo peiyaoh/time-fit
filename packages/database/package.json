@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@prisma/client": "6.10.0",
+    "@time-fit/helper": "workspace:*",
     "luxon": "^3.6.0",
     "voca": "^1.4.1"
   },

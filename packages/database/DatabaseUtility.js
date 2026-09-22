@@ -3,6 +3,8 @@ import voca from 'voca';
 import prisma from "./prisma.js";
 import { inspect } from 'util';
 import v from "voca";
+import DateTimeHelper from "@time-fit/helper/DateTimeHelper.js";
+import StringHelper from "@time-fit/helper/StringHelper.js";
 
 function replacer(key, value) {
     if (typeof value === "Date") {
@@ -165,15 +167,11 @@ export default class DatabaseUtility {
     }
 
     static matchSqureBracketPlaceholder(message) {
-        // This is a placeholder implementation - would need to import from GeneralUtility
-        // For now, return empty array to avoid breaking functionality
-        return [];
+        return StringHelper.matchSqureBracketPlaceholder(message);
     }
 
     static diffDateTime(dateTimeA, dateTimeB, unit) {
-        // This is a placeholder implementation - would need to import from GeneralUtility
-        // For now, return empty object to avoid breaking functionality
-        return { toObject: () => ({ seconds: 0 }) };
+        return DateTimeHelper.diffDateTime(dateTimeA, dateTimeB, unit);
     }
 
     static async findMessageByGroup(gGroupName, avoidHistory=false, username=""){
