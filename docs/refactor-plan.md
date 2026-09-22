@@ -285,6 +285,36 @@ apply under this project's native-ESM Jest config.
 `apps/take-a-break` boots cleanly, and all 18 test suites / 75 tests pass with zero
 failures** — the first fully green state this codebase has had in this refactor's history.
 
+## Stage 3 progress (partial — not complete)
+
+Starting Stage 3a surfaced a severity-1 bug beyond what the plan anticipated:
+`DatabaseUtility.diffDateTime` and `.matchSqureBracketPlaceholder` were dead stub
+implementations (comments read "would need to import from GeneralUtility") — the former
+always returned a fixed `{ seconds: 0 }`, which fed the exit condition of a `while` loop in
+`getUserFitbitDateAndWearingMinutesListDuringPeriod` and
+`getUserFitbitWearingMinutesPerDayListDuringPeriod` (`while (diff >= 0)`); since the
+condition could never become false, either method would **hang forever** if called. Real,
+already-tested implementations of both already existed in `@time-fit/helper`
+(`DateTimeHelper.diffDateTime`, `StringHelper.matchSqureBracketPlaceholder`) and are
+correctly used elsewhere by `AppHelper.js` — `DatabaseUtility`'s stubs now delegate to them.
+Fixed and verified directly (confirmed the previously-infinite loop now terminates after
+the expected number of iterations), plus characterization tests added for the
+non-persistence logic this touches (placeholder substitution, message composition).
+
+**What Stage 3 still needs — this is a partial start, not a completed stage.**
+`DatabaseUtility.js` has 42 static methods and ~26 Prisma call sites; the work above
+covered the handful of pure/near-pure ones. The remaining, much larger piece — extracting
+the rest of the persistence-coupled business logic and designing a `StorageAdapter`
+interface implemented by both `@time-fit/database` and `@time-fit/mongodb-helper` — has
+not been attempted. This is genuinely the highest-effort stage in the plan (as flagged
+since the original review), and doing it properly means characterizing and extracting
+roughly 40 more methods' worth of survey/message/Fitbit-data query logic, one coherent
+domain area at a time, verified against real or seeded test data rather than assumptions.
+Recommend tackling it in focused follow-up sessions grouped by domain (e.g. message/survey
+methods first, Fitbit-activity methods next, task-log methods last), each with its own
+characterization tests written and verified before any extraction — not attempted as one
+single pass.
+
 ## Sequencing & shipping rationale
 
 1 → 2 → 3a → 3b → 4 → 5 → 6 → 7, each landing as its own PR against `main`, gated by Stage
