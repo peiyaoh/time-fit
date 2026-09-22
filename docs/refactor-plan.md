@@ -266,29 +266,24 @@ means the Phase 1/2 review process, despite five rounds of grep-based verificati
 missed two real call sites — a reminder that "zero grep hits" checks need to cover the
 `apps/*` tree as thoroughly as `packages/*`, not just assume it.
 
-**Newly discovered, deferred to a future stage (found only by actually running
-`next build`, not by static review):**
-- `apps/fitbit-break/pages/api/fitbit-data.js`, `fitbit-signin.js`,
-  `fitbit-subscription.js`, and `manage-fitbit-subscription.js` all import a
-  `@time-fit/data-source/fitbit/helper/*.js` path that has never existed as a real package
-  — the same fictional path the deleted `packages/index.js` referenced. These four pages
-  are currently non-functional. Likely a single consolidated fix (repoint all four to
-  `@time-fit/fitbit-integration`, which holds the real implementations) rather than four
-  separate ones.
-- `packages/helper/__test__/TwilioHelper.test.js` fails because `TwilioHelper.js` was
-  never actually implemented in `packages/helper` despite being imported by
-  `action-collection`'s message actions and tested. Needs either a real implementation or
-  the test/imports removed, as a Stage 2 or Stage 5 follow-up (Twilio is an app-specific
-  integration).
-- `apps/fitbit-break/pages/test.js` has additional stale `../lib/GeneralUtility.mjs` /
-  `../lib/prisma.mjs` imports not yet exercised by the build (blocked behind the
-  `fitbit-data.js`-class failures above) — check once those are fixed.
+**Stage 1c (completed).** The items above, plus more of the same class discovered while
+verifying the fix with a real `next build` rather than trusting the smoke-boot alone:
+`apps/fitbit-break/pages/{activity-summary,dashboard,display-subscription,fitbit-signin,
+get-activity-summary,get-intraday,main}.js` also imported the fictional
+`@time-fit/data-source/fitbit/helper/*` path or stale `../lib/*.mjs` files; four pages
+(`get-activity-summary`, `get-intraday`, `refresh-token`, `group-setting`) additionally
+had a broken NextAuth import (`./auth/[...nextauth]` instead of the real
+`./api/auth/[...nextauth]`); `apps/fitbit-break` carried an unused, ancient direct `twilio`
+dependency that was shadowing the real one via yarn hoisting; and
+`packages/web-components` needed `transpilePackages` in `next.config.js` since it ships
+JSX in `.js` files that Next doesn't transpile for workspace packages by default.
+`TwilioHelper.js` was implemented (matching the pre-existing test spec) and its test
+migrated to `jest.unstable_mockModule`, since `jest.mock()`'s CJS-style hoisting doesn't
+apply under this project's native-ESM Jest config.
 
-None of these block Stage 1's own deliverable (CI green for the items actually in Stage
-1's scope); they're pre-existing defects in code Stage 1 never claimed to touch, surfaced
-as a side effect of building real CI. Recommend a short "Stage 1c — fix remaining
-fitbit-break pages" addendum before Stage 2 begins, since these are more broken-import bugs
-of the exact class Stage 1 exists to fix, just discovered late.
+**Result: `apps/fitbit-break` now builds cleanly end to end (every page compiles),
+`apps/take-a-break` boots cleanly, and all 18 test suites / 75 tests pass with zero
+failures** — the first fully green state this codebase has had in this refactor's history.
 
 ## Sequencing & shipping rationale
 
