@@ -93,6 +93,12 @@ extraction.
 
 ## 3. Target architecture
 
+> Superseded in detail by [`adr/`](adr/) (Stage B). Refinements made there: an
+> invalid-time-zone participant is skipped with no record (no `scheduledAt` can exist);
+> "group"/"phase" eligibility collapse into one `eligibility.attributes` matcher; `claim`
+> takes a `token` so adapter retries are safe; decision subjects are prefixed `p:`/`s:`;
+> plugins get a timeout + `AbortSignal`; fixed-offset zones such as `+05:00` are rejected.
+
 ```
  apps/* , examples/*          composition roots (unpublished)
  contrib/legacy/* (private)   time-engine, helper, database, action-collection,
@@ -233,6 +239,10 @@ crosses a minute boundary (verified), so it starts only when the current second 
 It ships with Stage B.
 
 ### Stage B: Contract and names
+> **Status (2026-09-22): done except the npm scope (maintainer action).** ADRs 0001–0007
+> are in [`adr/`](adr/), and fixtures are in [`adr/fixtures/`](adr/fixtures/). The CI smoke fix
+> is in `.github/workflows/ci.yml`. **The ADRs are now the source of truth for §3**; where
+> they differ from §3 (below), the ADR wins.
 **Change:** ADRs for §3.1–3.6. Fixtures: DST gap/fold, date-line, invalid zone,
 catch-up/missed-window, task created mid-window, coincident checkpoints, `decisionId`
 goldens, edit-during-window (same `decisionId`), reproducible draws from the seed,

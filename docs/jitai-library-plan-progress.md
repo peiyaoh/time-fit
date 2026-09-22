@@ -99,3 +99,20 @@ Runs 3–5 were self-critiqued (Codex unavailable).
 - Verified a CI flake: the take-a-break smoke exits 1 when its 5 s window crosses a minute
   boundary (Prisma write → unhandled rejection). One-line CI fix ships with Stage B.
 - Next: **Stage B** (ADRs + fixtures + CI flake fix; npm scope is a user action).
+
+## Stage B: Contract (2026-09-22)
+- Wrote ADRs 0001–0007 (`docs/adr/`) and 4 fixture files (`docs/adr/fixtures/`):
+  - 14 calendar occurrence cases + 7 invalid checkpoints + 8 zones;
+  - identity/version/seed/arm goldens;
+  - 24 task-spec validation cases;
+  - 18 engine scenarios.
+- Verified library behavior the contract relies on: cron-parser 5.0.6 + Luxon 3.6.0 shift
+  DST-gap times forward and fire folded times once. Luxon accepts `+05:00` as a zone, so
+  the ADR adds a name-pattern check.
+- Findings while specifying: legacy cron ran in the server's zone; a weekday mismatch on
+  one legacy `spec` checkpoint skipped the remaining checkpoints; legacy
+  `checkPoints.enabled:false` meant "every minute"; the legacy condition path never ran,
+  so the ADR records intended, not observed, semantics.
+- CI: take-a-break smoke now waits until second ≤ 50 (fixes the verified ~1-in-12 flake).
+- Open: `@time-fit` npm scope (maintainer action; fallback names in ADR 0007).
+- Next: Stage C1 (pure kernel) against these fixtures.

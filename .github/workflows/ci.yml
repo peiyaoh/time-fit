@@ -73,7 +73,12 @@ jobs:
         # during module import/registration is treated as a passing smoke test;
         # `timeout` exit code 124 (timed out, i.e. it was still running) is
         # accepted as success, any other non-zero exit fails the job.
+        # The legacy engine writes to Prisma on each minute boundary, and CI has no
+        # database, so a 5 s run that crosses a minute boundary crashes (exit 1).
+        # Start only when the current second is <= 50 so the run stays within one
+        # minute. Remove once take-a-break runs on @time-fit/core (plan Stage E).
         run: |
+          while [ $((10#$(date -u +%S))) -gt 50 ]; do sleep 1; done
           set +e
           timeout 5s node apps/take-a-break/index.js
           status=$?
