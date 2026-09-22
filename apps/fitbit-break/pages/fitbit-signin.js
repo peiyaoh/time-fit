@@ -5,12 +5,12 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import LinearProgress from "@mui/material/LinearProgress";
 import Button from "@mui/material/Button";
-import FitbitHelper from "../lib/FitbitHelper.mjs";
+import FitbitHelper from "@time-fit/fitbit-integration/FitbitHelper.js";
 import { inspect } from "util";
 import { Fragment } from "react";
 
 import UserInfoHelper from "@time-fit/helper/UserInfoHelper";
-import FitbitAPIHelper from "@time-fit/data-source/fitbit/helper/FitbitAPIHelper";
+import FitbitAPIHelper from "@time-fit/fitbit-integration/FitbitAPIHelper.js";
 
 
 export async function getServerSideProps({ query }) {

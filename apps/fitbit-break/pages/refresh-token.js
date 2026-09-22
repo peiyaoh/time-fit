@@ -7,11 +7,11 @@ import React from "react";
 
 import Button from "@mui/material/Button";
 
-import FitbitHelper from "../lib/FitbitHelper.mjs";
+import FitbitHelper from "@time-fit/fitbit-integration/FitbitHelper.js";
 import { inspect } from "util";
 
 import { getServerSession } from "next-auth/next";
-import { authOptions } from "./auth/[...nextauth]";
+import { authOptions } from "./api/auth/[...nextauth]";
 import UserInfoHelper from "@time-fit/helper/UserInfoHelper";
 
 export async function getServerSideProps(ctx) {

@@ -6,7 +6,7 @@ import React from "react";
 import Button from '@mui/material/Button';
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
-import FitbitSubscriptionHelper from "@time-fit/data-source/fitbit/helper/FitbitSubscriptionHelper";
+import FitbitSubscriptionHelper from "@time-fit/fitbit-integration/FitbitSubscriptionHelper.js";
 import UserInfoHelper from "@time-fit/helper/UserInfoHelper";
 
 export async function getServerSideProps(ctx) {

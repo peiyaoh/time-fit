@@ -1,4 +1,4 @@
-import FitbitUpdateHelper from "@time-fit/data-source/fitbit/helper/FitbitUpdateHelper.js";
+import FitbitUpdateHelper from "@time-fit/fitbit-integration/FitbitUpdateHelper.js";
 import NetworkHelper from "@time-fit/helper/NetworkHelper.js";
 
 export default async function handler(req, res) {

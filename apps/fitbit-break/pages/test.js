@@ -24,12 +24,12 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 
-import GeneralUtility from "../lib/GeneralUtility.mjs";
+import GeneralUtility from "@time-fit/app-utils/GeneralUtility.js";
 
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
-import prisma from "../lib/prisma.mjs";
+import prisma from "@time-fit/database/prisma.js";
 
 import SurveyResponseTable from "../component/SurveyResponseTable";
 import FitbitNotificationTable from "../component/FitbitNotificationTable";

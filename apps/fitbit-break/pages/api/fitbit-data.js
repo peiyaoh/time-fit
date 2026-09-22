@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./auth/[...nextauth]";
 import { DateTime } from "luxon";
-import FitbitDataHelper from "@time-fit/data-source/fitbit/helper/FitbitDataHelper.js";
+import FitbitDataHelper from "@time-fit/fitbit-integration/FitbitDataHelper.js";
 
 const adminUsernameList = ["test1", "test2", "test3", "test4"];
 

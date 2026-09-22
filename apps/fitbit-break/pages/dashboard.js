@@ -19,7 +19,7 @@ import { useSession } from "next-auth/react";
 import { DateTime } from "luxon";
 import ObjectHelper from '@time-fit/helper/ObjectHelper';
 import UserInfoHelper from '@time-fit/helper/UserInfoHelper';
-import FitbitSubscriptionHelper from '@time-fit/data-source/fitbit/helper/FitbitSubscriptionHelper';
+import FitbitSubscriptionHelper from '@time-fit/fitbit-integration/FitbitSubscriptionHelper.js';
 import TaskHelper from '@time-fit/helper/TaskHelper';
 
 const adminUsernameList = ["test1", "test2", "test3", "test4"];

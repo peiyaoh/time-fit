@@ -10,7 +10,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import FormControl from "@mui/material/FormControl";
 import FormLabel from "@mui/material/FormLabel";
 import Divider from "@mui/material/Divider";
-import { authOptions } from "./auth/[...nextauth]";
+import { authOptions } from "./api/auth/[...nextauth]";
 import UserInfoHelper from "@time-fit/helper/UserInfoHelper";
 import ObjectHelper from "@time-fit/helper/ObjectHelper";
 

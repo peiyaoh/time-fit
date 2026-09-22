@@ -1,23 +1,26 @@
 // TwilioHelper.test.js
-// Assuming your TwilioHelper.js is in the same directory or adjust path accordingly
+import { jest } from '@jest/globals';
 
-import TwilioHelper from '../TwilioHelper'; // Your original file
-import Twilio from 'twilio'; // Import Twilio for mocking purposes
-jest.mock('twilio');
+// Native ESM in this project requires jest.unstable_mockModule + a dynamic import of the
+// module under test, instead of jest.mock()'s CJS-style hoisting/auto-mocking.
+const mockMessagesCreate = jest.fn();
+const MockTwilioClient = jest.fn(() => ({
+  messages: {
+    create: mockMessagesCreate,
+  },
+}));
 
-// Get a reference to the mocked Twilio client constructor.
-// This is the function that is exported by our __mocks__/twilio.js
-const MockTwilioClient = Twilio; // Renaming for clarity in tests
+jest.unstable_mockModule('twilio', () => ({
+  default: MockTwilioClient,
+}));
 
-// Access the specific mock function we want to control (messages.create)
-const mockMessagesCreate = MockTwilioClient().messages.create;
+const { default: TwilioHelper } = await import('../TwilioHelper.js');
 
 describe('TwilioHelper', () => {
   // Define mock environment variables
   const MOCK_ACCOUNT_SID = 'AC_TEST_SID';
   const MOCK_AUTH_TOKEN = 'test_auth_token';
   const MOCK_MESSAGING_SERVICE_SID = 'MG_TEST_SID';
-  const MOCK_TWILIO_PHONE_NUMBER = '+15017122661'; // Example from problem description if needed, though not directly used in this `sendMessage`
 
   // Set up mock environment variables before all tests
   beforeAll(() => {
@@ -35,9 +38,8 @@ describe('TwilioHelper', () => {
 
   // Clear all mock calls and reset mock implementations before each test
   beforeEach(() => {
-    // This is crucial to prevent test interference
-    MockTwilioClient.mockClear(); // Clear calls to the Twilio constructor
-    mockMessagesCreate.mockClear(); // Clear calls to messages.create
+    MockTwilioClient.mockClear();
+    mockMessagesCreate.mockClear();
   });
 
   describe('sendMessage', () => {
@@ -134,10 +136,5 @@ describe('TwilioHelper', () => {
       expect(result).toBe(mockError);
       expect(result.message).toBe('Twilio API error: Invalid "To" number');
     });
-
-    // You could add more tests for edge cases:
-    // - Empty bodyMessage
-    // - Invalid phone format (Twilio's side)
-    // - Different error types from Twilio
   });
 });

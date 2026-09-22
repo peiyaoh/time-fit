@@ -5,11 +5,11 @@ import { useSession } from "next-auth/react";
 import React from "react";
 import Button from "@mui/material/Button";
 import { DateTime } from "luxon";
-import { authOptions } from "./auth/[...nextauth]";
+import { authOptions } from "./api/auth/[...nextauth]";
 import { getServerSession } from "next-auth/next";
 
 import UserInfoHelper from "@time-fit/helper/UserInfoHelper";
-import FitbitDataHelper from "@time-fit/data-source/fitbit/helper/FitbitDataHelper";
+import FitbitDataHelper from "@time-fit/fitbit-integration/FitbitDataHelper.js";
 
 export async function getServerSideProps(ctx) {
   const session = await getServerSession(ctx.req, ctx.res, authOptions);

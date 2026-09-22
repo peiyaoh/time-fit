@@ -1,6 +1,6 @@
 import { inspect } from 'util';
 import UserInfoHelper from "@time-fit/helper/UserInfoHelper";
-import FitbitHelper from "@time-fit/data-source/fitbit/helper/FitbitHelper.js";
+import FitbitHelper from "@time-fit/fitbit-integration/FitbitHelper.js";
 
 export default async function handler(req, res) {
   const { code, state } = req.query;

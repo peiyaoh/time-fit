@@ -9,7 +9,7 @@ import { DateTime } from "luxon";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import UserInfoHelper from "@time-fit/helper/UserInfoHelper";
-import FitbitAPIHelper from "@time-fit/data-source/fitbit/helper/FitbitAPIHelper";
+import FitbitAPIHelper from "@time-fit/fitbit-integration/FitbitAPIHelper.js";
 
 export async function getServerSideProps(ctx) {
   const session = await getServerSession(ctx.req, ctx.res, authOptions);

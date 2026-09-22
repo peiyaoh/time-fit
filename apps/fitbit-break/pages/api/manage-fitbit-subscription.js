@@ -1,7 +1,7 @@
 import { authOptions } from "./auth/[...nextauth]";
 import { getServerSession } from "next-auth";
 import UserInfoHelper from "@time-fit/helper/UserInfoHelper";
-import FitbitSubscriptionHelper from "@time-fit/data-source/fitbit/helper/FitbitSubscriptionHelper";
+import FitbitSubscriptionHelper from "@time-fit/fitbit-integration/FitbitSubscriptionHelper.js";
 
 
 export default async function handler(req, res) {

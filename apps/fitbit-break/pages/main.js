@@ -13,7 +13,7 @@ import ObjectHelper from '@time-fit/helper/ObjectHelper';
 import { authOptions } from "./api/auth/[...nextauth]"
 import { getServerSession } from "next-auth/next"
 import UserInfoHelper from '@time-fit/helper/UserInfoHelper';
-import FitbitAPIHelper from '@time-fit/data-source/fitbit/helper/FitbitAPIHelper';
+import FitbitAPIHelper from '@time-fit/fitbit-integration/FitbitAPIHelper.js';
 import SurveyResponseHelper from '@time-fit/helper/SurveyResponseHelper';
 import AppHelper from '../lib/AppHelper';
 

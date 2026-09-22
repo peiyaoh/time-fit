@@ -25,7 +25,7 @@ import { useRouter } from "next/router";
 import React, { Fragment, useState } from "react";
 import Button from '@mui/material/Button';
 import Divider from "@mui/material/Divider";
-import prisma from "../lib/prisma.mjs";
+import prisma from "@time-fit/database/prisma.js";
 import { DateTime } from "luxon";
 
 function replacer(key, value) {
