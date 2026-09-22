@@ -1,6 +1,6 @@
 # time-fit → Open-Source JITAI Library: Continuation Plan
 
-_Status: **FINAL (v6)**, 2026-09-22, after 5 critique runs (Runs 1–2 critiqued by Codex; Codex hit its usage limit during Run 3, so Claude took the critic role for Runs 3–5). Under review: Codex critique ↔ Claude pushback, 5 runs.
+_Status: **FINAL (v6.1)**, 2026-09-22 (v6.1 = user decision on fitbit-break + Run 6 review), after 5 critique runs (Runs 1–2 critiqued by Codex; Codex hit its usage limit during Run 3, so Claude took the critic role for Runs 3–5). Under review: Codex critique ↔ Claude pushback, 5 runs.
 Progress log: [`jitai-library-plan-progress.md`](jitai-library-plan-progress.md).
 Round-by-round critiques: [`jitai-library-plan-review/`](jitai-library-plan-review/).
 Supersedes the forward-looking stages (2–7) of [`refactor-plan.md`](refactor-plan.md); that
@@ -224,25 +224,22 @@ Schema.
 
 ## 4. Stages (each = one mergeable PR, CI green)
 
-### Stage A: Correctness gate on the legacy engine (applies regardless of the D′ decision)
-**Change:** fix #12 (`datetime`); #13 (await actions, so a rejection becomes a failed result);
-#4 (façade local-time conversion implemented with Luxon, legacy weekday/weekend + custom
-mapping kept); #3 (`start()` fills only unset hooks); #17 (`cron.js`
-method name); #8 (`engine.mjs`); #9 (`time-engine/index.js`); #10 (dependency metadata).
-**Tests (fail today, pass after):** these target the public façade API
-(`TimeEngine.register*`, `processClock`) and the `/api/cron` handler, not executor
-internals. They cover a real condition, a rejecting action, preference checkpoints
-(weekday/weekend/custom/missing), registration surviving `start()`, deterministic
-`processClock(fixedNow)` for take-a-break with stub sinks, and a CI job that **invokes
-the `/api/cron` handler** against `MongoMemoryReplSet` (reusing the harness in
-`packages/helper/__test__/Prisma.test.js`; Prisma on Mongo requires a replica set).
+### Stage A: Dropped (user decision, 2026-09-22)
+The fitbit-break study is not running and has no near-term features, so fixing the legacy
+engine it depends on is wasted work. The known legacy defects (#4, #12, #13, #17) are
+listed in `contrib/legacy/README.md` during Stage D instead. The only surviving item is a
+**one-line CI fix**: take-a-break's smoke job crashes (exit 1) whenever its 5 s window
+crosses a minute boundary (verified), so it starts only when the current second is ≤ 50.
+It ships with Stage B.
 
 ### Stage B: Contract and names
 **Change:** ADRs for §3.1–3.6. Fixtures: DST gap/fold, date-line, invalid zone,
 catch-up/missed-window, task created mid-window, coincident checkpoints, `decisionId`
 goldens, edit-during-window (same `decisionId`), reproducible draws from the seed,
 ineligible → no record / unavailable → one record, and each intended change vs. legacy.
-**Claim the npm scope** (or pick names) now.
+**Claim the npm scope** (or pick names) now. This is a **user action** (npm account).
+The §3.6 ADR describes *intended* legacy semantics read from code; the legacy condition
+path never executed (#12).
 **Acceptance:** ADRs merged; fixtures committed with expected outputs; npm scope owned.
 
 ### Stage C1: Pure kernel
@@ -266,12 +263,14 @@ lines) runs from an `npm pack` tarball in a clean fixture. The memory store pass
 conformance suite.
 
 ### Stage D: Legacy quarantine + fresh Prisma adapter
-**Change:** move `time-engine`, `helper`, `database`, `action-collection`,
+**Change:** move the `apps/fitbit-break` app itself plus `time-engine`, `helper`, `database`, `action-collection`,
 `condition-collection/others`, `app-utils`, `api-handlers`, `web-components`,
 `mongodb-helper`, and `fitbit-integration` into `contrib/legacy/*` (private, unchanged
 behavior, workspace paths updated, fitbit-break still green), together with `test_script/`
 (77 ad-hoc scripts, not converted) and the `DatabaseUtility` characterization tests.
-This is a *move*, not a rewrite. `docs/refactor-plan.md` gets a "superseded by" banner. take-a-break stays on legacy until Stage E. Then add
+This is a *move*, not a rewrite. Add `contrib/legacy/README.md` (frozen, unmaintained,
+known defects #4/#12/#13/#17). The fitbit-break `next build` CI job stays through this
+stage, then becomes manual-trigger. `docs/refactor-plan.md` gets a "superseded by" banner. take-a-break stays on legacy until Stage E. Then add
 `@time-fit/storage-prisma`: it takes an **injected `PrismaClient`** (no module
 singleton) and ships **schema fragments** (SQLite, Postgres) for `participant`, `task`,
 `decision` (unique `decisionId`), and `gap`, which the app merges into its own schema. Add
@@ -280,13 +279,10 @@ singleton) and ships **schema fragments** (SQLite, Postgres) for `participant`, 
 passes the conformance suite in CI on SQLite (no Docker). `examples/prisma` runs from packed tarballs.
 Dependency-cruiser in CI: no cycles; published packages never import `contrib/`.
 
-### Stage D′ (optional, user-gated): Migrate the live study onto core
-Only if the fitbit-break study will keep running *and* receive new features: a
-fitbit-break-owned adapter maps its `users`/`task` collections to core ports, legacy
-plugins are wrapped with `fromLegacyPlugin()` (lives in contrib), decisions go to a new
-`decision` collection (additive; legacy `taskLog` kept as display-only), `cron.js` is
-replaced by `engine.tick(now)`, and `prisma db push` is rehearsed on a DB copy.
-Otherwise fitbit-break stays on `contrib/legacy` indefinitely.
+### Stage D′: Not planned
+Dropped by the user decision (study not running). Reviving the study later means first
+fixing the listed legacy defects, or migrating it onto core with a fitbit-break-owned
+adapter.
 
 ### Stage E: Integrations
 Can run in parallel with D after C2. `@time-fit/integrations` provides `/twilio`, `/mailjet`,
@@ -310,20 +306,20 @@ envelope from the F benchmark; `CITATION.cff` updated + "citing / MRT usage" sec
 `npm publish --provenance` dry run; Dependabot; license scan.
 **Acceptance:** the release dry run produces tarballs that pass all clean-fixture tests.
 
-Effort (solo): A M · B M · C1 L · C2 L · D M · D′ L (optional) · E M · F M · G M.
-Order: A → B → C1 → C2 → (D ∥ E) → F → G; D′ at any point after C2, only if chosen.
+Effort (solo): B M · C1 L · C2 L · D M · E M · F M · G M.
+Order: **B → C1 → C2 → (D ∥ E) → F → G**.
 
 ---
 
 ## 5. Definition of done (v1)
-Stages A–G (C1 and C2 both) merged (D′ only if chosen). `@time-fit/core`, `@time-fit/storage-prisma`,
+Stages B–G (C1 and C2 both) merged. `@time-fit/core`, `@time-fit/storage-prisma`,
 and `@time-fit/integrations` are published at `0.x` and usable from packed tarballs. The memory and
 Prisma adapters pass the conformance suite. take-a-break and the new examples run on core.
-fitbit-break is either on core (D′) or explicitly quarantined in `contrib/legacy`.
+fitbit-break is quarantined in `contrib/legacy` with its known defects documented.
 
 ## 6. Open decisions
-- **Is the fitbit-break (Walk-to-Joy) study still live, and will it get new features?**
-  This decides D′. Default: no, so quarantine it.
+- ~~Is the fitbit-break study still live?~~ **Resolved 2026-09-22:** not running, no
+  near-term features, so it is quarantined, Stage A is dropped, and D′ is not planned.
 - Keep monorepo in this repo (default) vs. new library repo with apps as examples.
 - Core name: `@time-fit/core` (default) vs. reusing `@time-fit/time-engine`.
 
@@ -332,4 +328,5 @@ Five critique runs (full record in [`jitai-library-plan-review/`](jitai-library-
 and [`jitai-library-plan-progress.md`](jitai-library-plan-progress.md)):
 v1 → Codex 5/10 → v2 → Codex 7/10 → v3 → critic 7/10 → v4 → critic 8/10 → v5 → critic 9/10 → **v6 final**.
 Runs 3–5 were critiqued by Claude after Codex hit its usage limit. Those runs lack an
-independent reviewer; re-running Run 5 with Codex once its limit resets is advisable.
+independent reviewer; the user then asked Claude (not Codex) to do a post-final review: see
+[`run-6-claude-review.md`](jitai-library-plan-review/run-6-claude-review.md).

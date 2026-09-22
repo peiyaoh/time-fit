@@ -15,6 +15,7 @@ Claude took the critic role for Runs 3–5 (the Orca dispatch was abandoned; the
 | 3 | [critique](jitai-library-plan-review/run-3-critique.md) (7/10, **Claude as critic**) | [response](jitai-library-plan-review/run-3-claude-response.md) | v4 | done |
 | 4 | [critique](jitai-library-plan-review/run-4-critique.md) (8/10, Claude as critic) | [response](jitai-library-plan-review/run-4-claude-response.md) | v5 | done |
 | 5 | [critique](jitai-library-plan-review/run-5-critique.md) (9/10, Claude as critic) | [response](jitai-library-plan-review/run-5-claude-response.md) | **v6 FINAL** | done |
+| 6 | [review](jitai-library-plan-review/run-6-claude-review.md) (Claude, post-final) | + user decision | **v6.1** | done |
 
 ## Run 0 — Assessment and draft v1 (Claude)
 - Verified: 19 suites / 88 tests pass; CI workflow exists (jest, `next build`, 5 s boot).
@@ -89,5 +90,12 @@ Claude took the critic role for Runs 3–5 (the Orca dispatch was abandoned; the
 - **Outcome:** `docs/jitai-library-plan.md` marked FINAL (v6). No source code was changed.
 
 ## Caveat
-Runs 3–5 were self-critiqued (Codex unavailable). Recommend one independent Codex pass on
-v6 after the usage limit resets (Codex reported reset at 6:52 PM local).
+Runs 3–5 were self-critiqued (Codex unavailable).
+
+## Run 6: User decision + post-final review → v6.1 (Claude, user-requested)
+- User: the fitbit-break study is not running, and no near-term features are planned.
+- Stage A dropped (it only fixed code headed for quarantine); D′ not planned; the fitbit-break
+  app itself moves to `contrib/legacy` with a known-defects README.
+- Verified a CI flake: the take-a-break smoke exits 1 when its 5 s window crosses a minute
+  boundary (Prisma write → unhandled rejection). One-line CI fix ships with Stage B.
+- Next: **Stage B** (ADRs + fixtures + CI flake fix; npm scope is a user action).
