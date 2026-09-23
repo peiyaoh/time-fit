@@ -1,6 +1,7 @@
 {
   "name": "@time-fit/app-utils",
   "version": "1.0.0",
+  "private": true,
   "description": "Application utilities for Time Fit projects",
   "main": "index.js",
   "type": "module",

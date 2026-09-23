@@ -1,10 +1,11 @@
-// Fails CI when @time-fit/core declares a runtime dependency outside the allowed set, so
-// the core never again drags in a database client or vendor SDK (ADR 0007).
+// Fails CI when published candidates declare or import runtime dependencies outside their
+// explicit allowlists. Source scanning closes the workspace-hoisting loophole.
 import { readdirSync, readFileSync } from "node:fs";
 
-const ALLOWED_CORE_DEPENDENCIES = new Set(["cron-parser", "luxon", "seedrandom"]);
-const CORE_MANIFEST_URL = new URL("../packages/core/package.json", import.meta.url);
-const CORE_SOURCE_DIRECTORY_URL = new URL("../packages/core/src/", import.meta.url);
+const PACKAGE_RULES = Object.freeze([
+  { name: "@time-fit/core", manifest: "../packages/core/package.json", source: "../packages/core/src/", allowed: new Set(["cron-parser", "luxon", "seedrandom"]) },
+  { name: "@time-fit/storage-prisma", manifest: "../packages/storage-prisma/package.json", source: "../packages/storage-prisma/src/", allowed: new Set(["@prisma/client", "@time-fit/core"]) },
+]);
 // Statement-anchored so words like "active-from" in comments never match:
 // `import|export ... from "x"` (may span lines), side-effect `import "x"`, dynamic `import("x")`.
 const IMPORT_SPECIFIER_PATTERN =
@@ -15,11 +16,11 @@ const IMPORT_SPECIFIER_PATTERN =
  *           optionalDependencies?: Record<string, string> }} manifest
  * @returns {string[]} runtime dependency names not on the allowlist
  */
-function findDisallowedDependencies(manifest) {
+function findDisallowedDependencies(manifest, allowed) {
   const runtimeNames = ["dependencies", "peerDependencies", "optionalDependencies"].flatMap((field) =>
     Object.keys(manifest[field] ?? {}),
   );
-  return runtimeNames.filter((name) => !ALLOWED_CORE_DEPENDENCIES.has(name));
+  return runtimeNames.filter((name) => !allowed.has(name));
 }
 
 /**
@@ -27,13 +28,13 @@ function findDisallowedDependencies(manifest) {
  * import still resolves locally; scanning source catches it before a packed install does.
  * @returns {string[]} "file: specifier" for bare imports that are neither allowed nor node: builtins
  */
-function findDisallowedImports() {
-  const sourceFiles = readdirSync(CORE_SOURCE_DIRECTORY_URL, { recursive: true }).filter((name) => name.endsWith(".js"));
+function findDisallowedImports(sourceDirectoryUrl, allowed) {
+  const sourceFiles = readdirSync(sourceDirectoryUrl, { recursive: true }).filter((name) => name.endsWith(".js"));
   return sourceFiles.flatMap((fileName) => {
-    const source = readFileSync(new URL(fileName, CORE_SOURCE_DIRECTORY_URL), "utf8");
+    const source = readFileSync(new URL(fileName, sourceDirectoryUrl), "utf8");
     return [...source.matchAll(IMPORT_SPECIFIER_PATTERN)]
       .map((match) => match[1] ?? match[2] ?? match[3])
-      .filter((specifier) => !isRelativeOrBuiltin(specifier) && !ALLOWED_CORE_DEPENDENCIES.has(packageNameOf(specifier)))
+      .filter((specifier) => !isRelativeOrBuiltin(specifier) && !allowed.has(packageNameOf(specifier)))
       .map((specifier) => `${fileName}: ${specifier}`);
   });
 }
@@ -47,14 +48,14 @@ function packageNameOf(specifier) {
   return specifier.startsWith("@") ? segments.slice(0, 2).join("/") : segments[0];
 }
 
-const manifest = JSON.parse(readFileSync(CORE_MANIFEST_URL, "utf8"));
-const disallowed = [...findDisallowedDependencies(manifest), ...findDisallowedImports()];
-if (disallowed.length > 0) {
-  console.error(
-    `@time-fit/core has disallowed runtime dependencies or imports: ${disallowed.join(", ")}.\n` +
-      `Allowed: ${[...ALLOWED_CORE_DEPENDENCIES].join(", ")}. ` +
-      "If one is truly needed, update ADR 0007 and this allowlist in the same PR.",
-  );
+const violations = PACKAGE_RULES.flatMap(({ name, manifest, source, allowed }) => {
+  const manifestUrl = new URL(manifest, import.meta.url);
+  const sourceUrl = new URL(source, import.meta.url);
+  const parsedManifest = JSON.parse(readFileSync(manifestUrl, "utf8"));
+  return [...findDisallowedDependencies(parsedManifest, allowed), ...findDisallowedImports(sourceUrl, allowed)].map((entry) => `${name}: ${entry}`);
+});
+if (violations.length > 0) {
+  console.error(`Published candidates have disallowed runtime dependencies or imports: ${violations.join(", ")}. Update the ADR and allowlist together if required.`);
   process.exit(1);
 }
-console.log(`@time-fit/core runtime dependencies and imports OK (${[...ALLOWED_CORE_DEPENDENCIES].join(", ")}).`);
+console.log(`Published candidate runtime dependencies and imports OK (${PACKAGE_RULES.map(({ name }) => name).join(", ")}).`);

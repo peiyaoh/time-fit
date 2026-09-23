@@ -16,6 +16,7 @@ and an implementation is correct when every fixture passes.
 | [0007](0007-packaging-and-names.md) | Package layout, names, runtime targets |
 | [0008](0008-stage-c1-clarifications.md) | Clarifications found while implementing the kernel (ids, extra error codes, instants, paths) |
 | [0009](0009-stage-c2-engine-clarifications.md) | Clarifications found while implementing the engine (port payloads, tick semantics, counters, memory/testing APIs) |
+| [0010](0010-stage-d-storage-prisma.md) | Legacy boundary and injected Prisma storage adapter |
 
 **Status of all ADRs: Accepted (2026-09-22).** To change an accepted decision, add a new
 ADR that supersedes it. Do not rewrite an accepted ADR.

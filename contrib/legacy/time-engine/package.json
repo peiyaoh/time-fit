@@ -1,6 +1,7 @@
 {
-  "name": "@time-fit/helper",
+  "name": "@time-fit/time-engine",
   "version": "1.0.0",
+  "private": true,
   "main": "index.js",
   "type": "module",
   "license": "MIT",
@@ -8,16 +9,12 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@time-fit/database": "workspace:*",
-    "cron-parser": "^5.0.6",
+    "@time-fit/helper": "workspace:*",
     "luxon": "^3.6.0",
-    "node-notifier": "^10.0.1",
     "seedrandom": "^3.0.5"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
-    "jest": "^29.7.0",
-    "mongodb-memory-server": "^10.1.4",
-    "twilio": "^5.5.1"
+    "jest": "^29.7.0"
   }
 }

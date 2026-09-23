@@ -51,3 +51,9 @@ yarn-error.log*
 # content
 /content/db/
 /database/
+/packages/storage-prisma/__test__/generated/
+/packages/storage-prisma/__test__/*.db*
+/packages/storage-prisma/coverage/
+/examples/prisma/dev.db
+/examples/prisma/dev.db*
+/examples/prisma/prisma/generated/

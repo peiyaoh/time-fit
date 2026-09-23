@@ -1,5 +1,8 @@
 # time-fit Refactor Plan
 
+> **Superseded by [docs/jitai-library-plan.md](jitai-library-plan.md).** This document is
+> retained only as the historical record of the earlier refactor stages.
+
 _Produced via 5 rounds of Claude draft ↔ Codex-style adversarial critique (Phase 1),
 followed by a second 5-round pass where Codex reviewed Stage 1's proposed solutions against
 alternatives and Claude critiqued/pushed back (Phase 2) — both phases verified directly

@@ -12,13 +12,13 @@ const config = {
   // https://jestjs.io/docs/ecmascript-modules
   //extensionsToTreatAsEsm: ['.js'],
   transform: {}, // Disable babel-jest or other transformations if you're using native ESM
-  // Next.js page files happen to be named test.js (e.g. apps/fitbit-break/pages/test.js,
+  // Next.js page files happen to be named test.js (e.g. contrib/legacy/fitbit-break/pages/test.js,
   // pages/api/test.js). They are not jest suites and use ESM/JSX syntax jest can't parse;
   // exclude the whole pages tree so they're never collected as test files.
   testPathIgnorePatterns: [
     '/node_modules/',
-    '<rootDir>/apps/fitbit-break/pages/',
-    '<rootDir>/apps/fitbit-break/.next/',
+    '<rootDir>/contrib/legacy/fitbit-break/pages/',
+    '<rootDir>/contrib/legacy/fitbit-break/.next/',
   ],
   globals: {
     'ts-jest': {
@@ -31,8 +31,10 @@ const config = {
     // "@time-fit/helper/DateTimeHelper.js" must resolve to that exact file, not fall
     // through to the bare-specifier rule below (which only fits "@time-fit/helper" with
     // no subpath, resolving to that package's main entry point).
-    '^@time-fit/([^/]+)/(.*)$': '<rootDir>/packages/$1/$2',
-    '^@time-fit/([^/]+)$': '<rootDir>/packages/$1/index.js',
+    '^@time-fit/core/(.*)$': '<rootDir>/packages/core/src/$1',
+    '^@time-fit/core$': '<rootDir>/packages/core/src/index.js',
+    '^@time-fit/([^/]+)/(.*)$': '<rootDir>/contrib/legacy/$1/$2',
+    '^@time-fit/([^/]+)$': '<rootDir>/contrib/legacy/$1/index.js',
   },
 };
 

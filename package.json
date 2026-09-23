@@ -5,16 +5,19 @@
   "license": "MIT",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "contrib/legacy/*",
+    "contrib/legacy/fitbit-break"
   ],
   "scripts": {
     "index": "node ./src/index.js",
     "example1": "node ./apps/take-a-break/index.js",
-    "example2": "node ./apps/fitbit-break/index.js",
+    "example2": "node ./contrib/legacy/fitbit-break/index.js",
     "test": "cross-env TZ=America/New_York NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
+    "dependency-cruiser": "^16.10.4",
     "jest": "^29.7.0",
     "prisma": "^6.5.0"
   },

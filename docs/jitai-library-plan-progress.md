@@ -175,3 +175,23 @@ Runs 3–5 were self-critiqued (Codex unavailable).
   server's zone (ADR 0006 legacy defect #1), and CI runs in UTC. Per the decision not to fix
   legacy code, the root `yarn test` script pins `TZ=America/New_York`. The `@time-fit/core`
   coverage step still runs in CI's native UTC, and core also passes under Asia/Tokyo.
+
+## Stage D: Legacy quarantine + fresh Prisma adapter (2026-09-22)
+
+- Moved the inactive Walk-to-Joy / fitbit-break app, its eleven legacy packages,
+  `test_script/`, and the Mongo Prisma schema to `contrib/legacy/` with `git mv`. All moved
+  packages are private workspaces; root Jest, CI Prisma generation, and the fitbit-break build
+  now target their new locations while take-a-break continues to import the legacy package
+  names unchanged.
+- Built private `@time-fit/storage-prisma`: injected-client participant/task/decision-log
+  ports, same-token atomic claim behavior, claimed-only terminal transitions, optional gaps,
+  SQLite/Postgres fragments, and a packed SQLite example. `yarn test` passes 31 suites / 422
+  tests; core coverage passes 11 suites / 318 tests and storage-prisma runs all 10 core
+  decision-log conformance checks plus 6 adapter tests (16 total) at 100% coverage. The packed
+  verifier now installs both tarballs into empty directories.
+- Added dependency-cruiser boundaries and generalized runtime-dependency scanning for core and
+  storage-prisma. The intentional deviation is that dependency-cruiser excludes
+  `contrib/legacy` from the no-cycle scan: its helper/database cycle is a preserved known
+  legacy defect, while packages are prohibited from importing contrib; this is documented in
+  ADR 0010. No legacy defects were fixed; the README records undefined `datetime`, unawaited
+  actions, missing `GeneralUtility.getLocalTime`, broken cron method, and server-zone cron.

@@ -1,6 +1,7 @@
 {
-  "name": "@time-fit/condition-collection",
+  "name": "@time-fit/fitbit-integration",
   "version": "1.0.0",
+  "private": true,
   "main": "index.js",
   "type": "module",
   "license": "MIT",
@@ -8,6 +9,10 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
+    "@time-fit/app-utils": "workspace:*",
+    "@time-fit/database": "workspace:*",
+    "@time-fit/helper": "workspace:*",
+    "axios": "^0.26.1",
     "luxon": "^3.6.0"
   },
   "devDependencies": {

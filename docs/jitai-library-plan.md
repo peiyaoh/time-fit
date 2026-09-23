@@ -283,6 +283,9 @@ lines) runs from an `npm pack` tarball in a clean fixture. The memory store pass
 conformance suite.
 
 ### Stage D: Legacy quarantine + fresh Prisma adapter
+> **Status (2026-09-22): done.** Legacy study code now lives in `contrib/legacy`; the
+> injected `@time-fit/storage-prisma` adapter, SQLite/Postgres fragments, packed SQLite
+> example, dependency boundaries, and 100%-covered Prisma adapter tests are in place.
 **Change:** move the `apps/fitbit-break` app itself plus `time-engine`, `helper`, `database`, `action-collection`,
 `condition-collection/others`, `app-utils`, `api-handlers`, `web-components`,
 `mongodb-helper`, and `fitbit-integration` into `contrib/legacy/*` (private, unchanged

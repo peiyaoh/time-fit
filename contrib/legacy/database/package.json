@@ -1,6 +1,7 @@
 {
-  "name": "@time-fit/fitbit-integration",
+  "name": "@time-fit/database",
   "version": "1.0.0",
+  "private": true,
   "main": "index.js",
   "type": "module",
   "license": "MIT",
@@ -8,11 +9,10 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@time-fit/app-utils": "workspace:*",
-    "@time-fit/database": "workspace:*",
+    "@prisma/client": "6.10.0",
     "@time-fit/helper": "workspace:*",
-    "axios": "^0.26.1",
-    "luxon": "^3.6.0"
+    "luxon": "^3.6.0",
+    "voca": "^1.4.1"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

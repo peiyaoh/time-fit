@@ -1,6 +1,7 @@
 {
-  "name": "@time-fit/time-engine",
+  "name": "@time-fit/condition-collection",
   "version": "1.0.0",
+  "private": true,
   "main": "index.js",
   "type": "module",
   "license": "MIT",
@@ -8,9 +9,7 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@time-fit/helper": "workspace:*",
-    "luxon": "^3.6.0",
-    "seedrandom": "^3.0.5"
+    "luxon": "^3.6.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

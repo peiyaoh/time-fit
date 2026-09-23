@@ -1,6 +1,7 @@
 {
-  "name": "@time-fit/database",
+  "name": "@time-fit/mongodb-helper",
   "version": "1.0.0",
+  "private": true,
   "main": "index.js",
   "type": "module",
   "license": "MIT",
@@ -8,10 +9,8 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@prisma/client": "6.10.0",
-    "@time-fit/helper": "workspace:*",
     "luxon": "^3.6.0",
-    "voca": "^1.4.1"
+    "mongodb": "^5.7.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

@@ -1,6 +1,7 @@
 {
   "name": "@time-fit/action-collection",
   "version": "1.0.0",
+  "private": true,
   "main": "index.js",
   "type": "module",
   "license": "MIT",

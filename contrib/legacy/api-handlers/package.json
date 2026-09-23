@@ -1,6 +1,7 @@
 {
   "name": "@time-fit/api-handlers",
   "version": "1.0.0",
+  "private": true,
   "description": "API handlers for Time Fit projects",
   "main": "index.js",
   "type": "module",

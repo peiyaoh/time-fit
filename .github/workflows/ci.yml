@@ -26,8 +26,8 @@ jobs:
       - name: Generate Prisma client
         # The legacy packages and apps import @prisma/client, which throws at import time
         # until a client is generated. Local machines already had one, so CI failed here
-        # from its first run. The root schema matches the client local tests use.
-        run: yarn prisma generate --schema prisma/schema.prisma
+        # from its first run. The quarantined Mongo schema matches the legacy client.
+        run: yarn prisma generate --schema contrib/legacy/prisma/schema.prisma
 
       - name: Run tests
         # The root script pins TZ=America/New_York: the legacy executor evaluates cron in the
@@ -36,14 +36,20 @@ jobs:
         # against a zone that differs from its test participants'.
         run: yarn test
 
-      - name: Check @time-fit/core dependencies and imports
+      - name: Check published candidate dependencies and imports
         run: node scripts/check-core-dependencies.mjs
+
+      - name: Check workspace dependency boundaries
+        run: yarn depcruise --config .dependency-cruiser.cjs packages
 
       - name: "@time-fit/core coverage (100% required)"
         run: yarn workspace @time-fit/core test:coverage
 
+      - name: "@time-fit/storage-prisma coverage (100% required)"
+        run: yarn workspace @time-fit/storage-prisma test:coverage
+
   packed-quickstart:
-    name: "@time-fit/core packed install + quickstart"
+    name: Packed install + quickstarts
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,7 +58,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Pack core, install into an empty directory, run examples/quickstart
+      - name: Pack core and Prisma storage, install into empty directories, run examples
         # No workspace install on purpose: only the tarball's declared dependencies exist.
         run: ./scripts/verify-packed-quickstart.sh
 
@@ -75,11 +81,11 @@ jobs:
       - name: Generate Prisma client
         # The legacy packages and apps import @prisma/client, which throws at import time
         # until a client is generated. Local machines already had one, so CI failed here
-        # from its first run. The root schema matches the client local tests use.
-        run: yarn prisma generate --schema prisma/schema.prisma
+        # from its first run. The quarantined Mongo schema matches the legacy client.
+        run: yarn prisma generate --schema contrib/legacy/prisma/schema.prisma
 
-      - name: Build apps/fitbit-break
-        working-directory: apps/fitbit-break
+      - name: Build contrib/legacy/fitbit-break
+        working-directory: contrib/legacy/fitbit-break
         # Dummy env values so `next build` can statically evaluate config/imports
         # that reference process.env; no live Prisma/Twilio/Fitbit credentials
         # are used or required for a build-only smoke check.
@@ -106,8 +112,8 @@ jobs:
       - name: Generate Prisma client
         # The legacy packages and apps import @prisma/client, which throws at import time
         # until a client is generated. Local machines already had one, so CI failed here
-        # from its first run. The root schema matches the client local tests use.
-        run: yarn prisma generate --schema prisma/schema.prisma
+        # from its first run. The quarantined Mongo schema matches the legacy client.
+        run: yarn prisma generate --schema contrib/legacy/prisma/schema.prisma
 
       - name: Boot apps/take-a-break briefly
         # index.js calls TimeEngine.start(), which runs an in-process scheduler

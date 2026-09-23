@@ -203,4 +203,4 @@ TimeEngine.start();
 ---
 
 ### References
-- Complete code example: [fitbit-break engine](../apps/fitbit-break/engine.mjs)
+- Complete code example: [legacy fitbit-break engine](../contrib/legacy/fitbit-break/engine.mjs)

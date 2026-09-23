@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
-# Packs @time-fit/core, installs the tarball into an empty directory outside the
-# workspace, and runs examples/quickstart against it. Proves the published package works
-# on its own: declared dependencies only, exports map, no workspace hoisting.
+# Packs published candidates, installs them into empty directories outside the workspace,
+# and runs the memory and injected-Prisma examples. This proves declared dependencies,
+# exports, and no workspace hoisting.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 work_dir="$(mktemp -d)"
 trap 'rm -rf "$work_dir"' EXIT
+# Keep npm's short-lived cache inside the fixture. Some developer caches are intentionally
+# unreadable to this process; a clean cache also better simulates a consumer machine.
+npm_cache="$work_dir/npm-cache"
+export npm_config_cache="$npm_cache"
 
-tarball="$(cd "$repo_root/packages/core" && npm pack --silent --pack-destination "$work_dir")"
+core_tarball="$(cd "$repo_root/packages/core" && npm pack --silent --pack-destination "$work_dir")"
+storage_tarball="$(cd "$repo_root/packages/storage-prisma" && npm pack --silent --pack-destination "$work_dir")"
 cd "$work_dir"
 npm init -y >/dev/null
 npm pkg set type=module >/dev/null
-npm install --silent --no-audit --no-fund "./$tarball"
+npm install --silent --no-audit --no-fund "./$core_tarball"
 cp "$repo_root/examples/quickstart/index.mjs" ./index.mjs
 
 output="$(node index.mjs)"
@@ -35,3 +40,19 @@ node --input-type=module -e '
   if (missing.length > 0) { console.error("missing exports:", missing); process.exit(1); }
   console.log("export subpaths OK");
 '
+
+prisma_dir="$work_dir/prisma-example"
+mkdir "$prisma_dir"
+cp "$repo_root/examples/prisma/index.mjs" "$repo_root/examples/prisma/package.json" "$prisma_dir/"
+cp -R "$repo_root/examples/prisma/prisma" "$prisma_dir/prisma"
+cd "$prisma_dir"
+npm install --silent --no-audit --no-fund "../$core_tarball" "../$storage_tarball" prisma@6.10.0 @prisma/client@6.10.0
+npx prisma generate --schema prisma/schema.prisma >/dev/null
+npx prisma db push --skip-generate --schema prisma/schema.prisma >/dev/null
+prisma_output="$(node index.mjs)"
+echo "$prisma_output"
+node -e '
+  const result = JSON.parse(process.argv[1]);
+  if (result.state !== "completed" || result.participantCount !== 1) process.exit(1);
+  console.log("packed Prisma example OK");
+' "$prisma_output"
