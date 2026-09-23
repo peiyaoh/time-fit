@@ -1766,6 +1766,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@time-fit/integrations@workspace:*, @time-fit/integrations@workspace:packages/integrations":
+  version: 0.0.0-use.local
+  resolution: "@time-fit/integrations@workspace:packages/integrations"
+  dependencies:
+    "@time-fit/core": "workspace:*"
+    cross-env: "npm:^7.0.3"
+    jest: "npm:^29.7.0"
+  peerDependencies:
+    "@time-fit/core": ">=0.0.0 <1"
+  languageName: unknown
+  linkType: soft
+
 "@time-fit/mongodb-helper@workspace:*, @time-fit/mongodb-helper@workspace:contrib/legacy/mongodb-helper":
   version: 0.0.0-use.local
   resolution: "@time-fit/mongodb-helper@workspace:contrib/legacy/mongodb-helper"
@@ -7860,10 +7872,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "take-a-break@workspace:apps/take-a-break"
   dependencies:
-    "@time-fit/action-collection": "workspace:*"
-    "@time-fit/time-engine": "workspace:*"
+    "@time-fit/core": "workspace:*"
+    "@time-fit/integrations": "workspace:*"
     cross-env: "npm:^7.0.3"
     jest: "npm:^29.7.0"
+    node-notifier: "npm:^10.0.1"
   languageName: unknown
   linkType: soft
 

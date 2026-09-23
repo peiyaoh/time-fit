@@ -195,3 +195,20 @@ Runs 3–5 were self-critiqued (Codex unavailable).
   legacy defect, while packages are prohibited from importing contrib; this is documented in
   ADR 0010. No legacy defects were fixed; the README records undefined `datetime`, unawaited
   actions, missing `GeneralUtility.getLocalTime`, broken cron method, and server-zone cron.
+
+## Stage E: Integrations + database-free take-a-break (2026-09-22)
+
+- Added private `@time-fit/integrations` with subpath-only `desktop`, `twilio`, and `mailjet`
+  Action factories. Every provider client is injected, no integration reads environment
+  variables or imports a vendor SDK, Mailjet receives `decisionId` as `CustomID`, and missing
+  participant destinations/provider failures become typed ActionResults.
+- Moved `apps/take-a-break` to core memory storage and a system-scope `America/Detroit` task.
+  The CI smoke now executes one fixed core tick with a fake notifier; it has no Prisma setup,
+  timer race, or minute-boundary workaround. Root `yarn test` passes 32 suites / 433 tests;
+  coverage passes core 11 suites / 318 tests, storage-prisma 1 suite / 16 tests, and
+  integrations 1 suite / 11 tests, all at 100%.
+- The packed verifier installs core + integrations without Twilio, Mailjet, or node-notifier
+  and imports/runs only desktop with an injected fake. The deliberate deviation is no optional
+  vendor peer dependency: because the package imports no SDK, declaring one would force an
+  unnecessary dependency contract; this and Twilio's lack of a safe idempotency field are
+  documented in ADR 0011. No new core or legacy bug was found or changed; next is Stage F.

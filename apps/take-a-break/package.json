@@ -9,8 +9,9 @@
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
   },
   "dependencies": {
-    "@time-fit/action-collection": "workspace:*",
-    "@time-fit/time-engine": "workspace:*"
+    "@time-fit/core": "workspace:*",
+    "@time-fit/integrations": "workspace:*",
+    "node-notifier": "^10.0.1"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

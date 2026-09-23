@@ -14,6 +14,7 @@ export npm_config_cache="$npm_cache"
 
 core_tarball="$(cd "$repo_root/packages/core" && npm pack --silent --pack-destination "$work_dir")"
 storage_tarball="$(cd "$repo_root/packages/storage-prisma" && npm pack --silent --pack-destination "$work_dir")"
+integrations_tarball="$(cd "$repo_root/packages/integrations" && npm pack --silent --pack-destination "$work_dir")"
 cd "$work_dir"
 npm init -y >/dev/null
 npm pkg set type=module >/dev/null
@@ -39,6 +40,23 @@ node --input-type=module -e '
     .filter(([name, mod]) => mod[name] === undefined).map(([name]) => name);
   if (missing.length > 0) { console.error("missing exports:", missing); process.exit(1); }
   console.log("export subpaths OK");
+'
+
+integrations_dir="$work_dir/integrations-example"
+mkdir "$integrations_dir"
+cd "$integrations_dir"
+npm init -y >/dev/null
+npm pkg set type=module >/dev/null
+# Deliberately install no Twilio, Mailjet, or node-notifier package: desktop depends only
+# on the injected notifier and the exports map must not load vendor modules.
+npm install --silent --no-audit --no-fund "../$core_tarball" "../$integrations_tarball"
+node --input-type=module -e '
+  const { desktopNotificationAction } = await import("@time-fit/integrations/desktop");
+  const notifications = [];
+  const action = desktopNotificationAction({ notifier: { notify: async (options) => { notifications.push(options); return "shown"; } } });
+  const result = await action.execute({ message: "Packed desktop integration" }, { decisionId: "packed-decision" });
+  if (!result.ok || notifications.length !== 1 || result.delivery.provider !== "desktop") process.exit(1);
+  console.log("packed integrations desktop example OK");
 '
 
 prisma_dir="$work_dir/prisma-example"

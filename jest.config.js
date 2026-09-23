@@ -31,8 +31,8 @@ const config = {
     // "@time-fit/helper/DateTimeHelper.js" must resolve to that exact file, not fall
     // through to the bare-specifier rule below (which only fits "@time-fit/helper" with
     // no subpath, resolving to that package's main entry point).
-    '^@time-fit/core/(.*)$': '<rootDir>/packages/core/src/$1',
-    '^@time-fit/core$': '<rootDir>/packages/core/src/index.js',
+    '^@time-fit/(core|storage-prisma|integrations)/(.*)$': '<rootDir>/packages/$1/src/$2',
+    '^@time-fit/(core|storage-prisma|integrations)$': '<rootDir>/packages/$1/src/index.js',
     '^@time-fit/([^/]+)/(.*)$': '<rootDir>/contrib/legacy/$1/$2',
     '^@time-fit/([^/]+)$': '<rootDir>/contrib/legacy/$1/index.js',
   },

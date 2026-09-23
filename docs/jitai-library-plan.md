@@ -308,6 +308,9 @@ fixing the listed legacy defects, or migrating it onto core with a fitbit-break-
 adapter.
 
 ### Stage E: Integrations
+> **Status (2026-09-22): done.** `@time-fit/integrations` now provides injected desktop,
+> Twilio, and Mailjet Actions with subpath-only exports, and take-a-break runs on core with a
+> database-free deterministic smoke tick.
 Can run in parallel with D after C2. `@time-fit/integrations` provides `/twilio`, `/mailjet`,
 and `/desktop` as core `Action`s. SDKs are optional peers. Credentials are passed in by the app and
 never read from `process.env` inside the library. `decisionId` is forwarded where the provider has a

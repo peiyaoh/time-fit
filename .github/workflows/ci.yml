@@ -48,6 +48,9 @@ jobs:
       - name: "@time-fit/storage-prisma coverage (100% required)"
         run: yarn workspace @time-fit/storage-prisma test:coverage
 
+      - name: "@time-fit/integrations coverage (100% required)"
+        run: yarn workspace @time-fit/integrations test:coverage
+
   packed-quickstart:
     name: Packed install + quickstarts
     runs-on: ubuntu-latest
@@ -58,7 +61,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Pack core and Prisma storage, install into empty directories, run examples
+      - name: Pack core, Prisma storage, and integrations into empty directories, run examples
         # No workspace install on purpose: only the tarball's declared dependencies exist.
         run: ./scripts/verify-packed-quickstart.sh
 
@@ -109,29 +112,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Generate Prisma client
-        # The legacy packages and apps import @prisma/client, which throws at import time
-        # until a client is generated. Local machines already had one, so CI failed here
-        # from its first run. The quarantined Mongo schema matches the legacy client.
-        run: yarn prisma generate --schema contrib/legacy/prisma/schema.prisma
-
-      - name: Boot apps/take-a-break briefly
-        # index.js calls TimeEngine.start(), which runs an in-process scheduler
-        # that never exits on its own. A short-lived run that doesn't throw
-        # during module import/registration is treated as a passing smoke test;
-        # `timeout` exit code 124 (timed out, i.e. it was still running) is
-        # accepted as success, any other non-zero exit fails the job.
-        # The legacy engine writes to Prisma on each minute boundary, and CI has no
-        # database, so a 5 s run that crosses a minute boundary crashes (exit 1).
-        # Start only when the current second is <= 50 so the run stays within one
-        # minute. Remove once take-a-break runs on @time-fit/core (plan Stage E).
+      - name: Run a deterministic apps/take-a-break tick
         run: |
-          while [ $((10#$(date -u +%S))) -gt 50 ]; do sleep 1; done
-          set +e
-          timeout 5s node apps/take-a-break/index.js
-          status=$?
-          set -e
-          if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
-            echo "take-a-break/index.js exited with unexpected status $status"
-            exit 1
-          fi
+          node --input-type=module -e '
+            import { runTakeABreakTick } from "./apps/take-a-break/index.js";
+            const notifier = { notify: async () => "smoke" };
+            const summary = await runTakeABreakTick(new Date("2026-09-22T14:30:00.000Z"), { desktopNotifier: notifier });
+            if (summary.counts.completed !== 1) throw new Error(`expected one completed delivery, got ${summary.counts.completed}`);
+          '

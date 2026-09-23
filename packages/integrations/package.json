@@ -1,0 +1,33 @@
+{
+  "name": "@time-fit/integrations",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Injected delivery actions for @time-fit/core",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    "./desktop": "./src/desktop.js",
+    "./twilio": "./src/twilio.js",
+    "./mailjet": "./src/mailjet.js"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage"
+  },
+  "peerDependencies": {
+    "@time-fit/core": ">=0.0.0 <1"
+  },
+  "devDependencies": {
+    "@time-fit/core": "workspace:*",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0"
+  }
+}

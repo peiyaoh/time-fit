@@ -5,6 +5,7 @@ import { readdirSync, readFileSync } from "node:fs";
 const PACKAGE_RULES = Object.freeze([
   { name: "@time-fit/core", manifest: "../packages/core/package.json", source: "../packages/core/src/", allowed: new Set(["cron-parser", "luxon", "seedrandom"]) },
   { name: "@time-fit/storage-prisma", manifest: "../packages/storage-prisma/package.json", source: "../packages/storage-prisma/src/", allowed: new Set(["@prisma/client", "@time-fit/core"]) },
+  { name: "@time-fit/integrations", manifest: "../packages/integrations/package.json", source: "../packages/integrations/src/", allowed: new Set(["@time-fit/core"]) },
 ]);
 // Statement-anchored so words like "active-from" in comments never match:
 // `import|export ... from "x"` (may span lines), side-effect `import "x"`, dynamic `import("x")`.
