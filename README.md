@@ -59,7 +59,8 @@ You can create collections through MongoDB compass or command line.
 
 * create a database named "time_fit" 
 
-Please reference /prisma/schema.prisma for a list of collections (everythign that starts with "model XYZ") to create within the database:
+The frozen Walk-to-Joy study schema is at `/contrib/legacy/prisma/schema.prisma`; reference
+it only when working on that quarantined study:
 * log
 * users
 * ...
@@ -101,13 +102,14 @@ yarn install
 
 ### Configure Prisma (for database query)
 
-In addition to the first time, everytime the database schema, /prisma/schema.prisma, is changed, run this command in the project folder.
+For the frozen study schema at `/contrib/legacy/prisma/schema.prisma`, generate the legacy
+client after schema changes.
 
 In a temrinal:
 
 ```bash
 
-npx prisma generate
+yarn prisma generate --schema contrib/legacy/prisma/schema.prisma
 
 ```
 
@@ -131,4 +133,3 @@ yarn index
 ## License
 
 This project is open-sourced under the [BSD 3-Clause License](LICENSE.txt), allowing for free use, distribution, and modification with attribution.
-

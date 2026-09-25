@@ -1,0 +1,21 @@
+{
+  "name": "@time-fit/app-utils",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Application utilities for Time Fit projects",
+  "main": "index.js",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@time-fit/helper": "workspace:*",
+    "json-difference": "^1.16.1",
+    "luxon": "^3.4.4",
+    "voca": "^1.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Participant {
+  id         String @id
+  timeZone   String
+  attributes Json?
+}
+
+model Task {
+  id          String   @id
+  spec        Json
+  activeFrom  DateTime?
+  activeUntil DateTime?
+}
+
+model Decision {
+  decisionId String    @id
+  state      String
+  claimToken String
+  claimedAt  DateTime
+  finishedAt DateTime?
+  error      Json?
+  record     Json
+}
+
+model Gap {
+  id     Int      @id @default(autoincrement())
+  from   DateTime
+  to     DateTime
+  tickId String
+}

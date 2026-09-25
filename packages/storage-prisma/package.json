@@ -1,0 +1,36 @@
+{
+  "name": "@time-fit/storage-prisma",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Injected Prisma storage ports for @time-fit/core",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "prisma",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "prisma:generate:test": "prisma generate --schema __test__/schema.prisma"
+  },
+  "peerDependencies": {
+    "@prisma/client": "^6.5.0",
+    "@time-fit/core": ">=0.0.0 <1"
+  },
+  "devDependencies": {
+    "@prisma/client": "6.10.0",
+    "@time-fit/core": "workspace:*",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "prisma": "^6.5.0"
+  }
+}

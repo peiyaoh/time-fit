@@ -1,0 +1,315 @@
+{
+  "$comment": "ADR 0005. occurrences(checkpoint, zone, window) must return exactly `expected` (ISO UTC, ascending) for scheduledAt in (from, to]. Generated 2026-09-22 with cron-parser 5.0.6 / luxon 3.6.0 and hand-checked.",
+  "zones": [
+    {
+      "zone": "America/Detroit",
+      "valid": true
+    },
+    {
+      "zone": "UTC",
+      "valid": true
+    },
+    {
+      "zone": "Etc/GMT+5",
+      "valid": true
+    },
+    {
+      "zone": "EST5EDT",
+      "valid": true
+    },
+    {
+      "zone": "Pacific/Kiritimati",
+      "valid": true
+    },
+    {
+      "zone": "+05:00",
+      "valid": false,
+      "note": "Luxon accepts fixed offsets; ADR 0005 rejects them"
+    },
+    {
+      "zone": "Mars/Olympus",
+      "valid": false
+    },
+    {
+      "zone": "",
+      "valid": false
+    }
+  ],
+  "occurrences": [
+    {
+      "name": "cron-dst-gap-shifts-forward",
+      "checkpoint": {
+        "id": "c",
+        "cron": "30 2 * * *"
+      },
+      "zone": "America/Detroit",
+      "from": "2026-03-07T12:00:00.000Z",
+      "to": "2026-03-10T12:00:00.000Z",
+      "expected": [
+        "2026-03-08T07:30:00.000Z",
+        "2026-03-09T06:30:00.000Z",
+        "2026-03-10T06:30:00.000Z"
+      ],
+      "note": "2026-03-08 02:30 does not exist -> 03:30 EDT (07:30Z)"
+    },
+    {
+      "name": "time-dst-gap-shifts-forward",
+      "checkpoint": {
+        "id": "c",
+        "time": "02:30"
+      },
+      "zone": "America/Detroit",
+      "from": "2026-03-07T12:00:00.000Z",
+      "to": "2026-03-10T12:00:00.000Z",
+      "expected": [
+        "2026-03-08T07:30:00.000Z",
+        "2026-03-09T06:30:00.000Z",
+        "2026-03-10T06:30:00.000Z"
+      ]
+    },
+    {
+      "name": "cron-dst-fold-first-only",
+      "checkpoint": {
+        "id": "c",
+        "cron": "30 1 * * *"
+      },
+      "zone": "America/Detroit",
+      "from": "2026-10-31T12:00:00.000Z",
+      "to": "2026-11-02T12:00:00.000Z",
+      "expected": [
+        "2026-11-01T05:30:00.000Z",
+        "2026-11-02T06:30:00.000Z"
+      ],
+      "note": "01:30 EDT only; not repeated at 01:30 EST"
+    },
+    {
+      "name": "time-dst-fold-first-only",
+      "checkpoint": {
+        "id": "c",
+        "time": "01:30"
+      },
+      "zone": "America/Detroit",
+      "from": "2026-10-31T12:00:00.000Z",
+      "to": "2026-11-02T12:00:00.000Z",
+      "expected": [
+        "2026-11-01T05:30:00.000Z",
+        "2026-11-02T06:30:00.000Z"
+      ]
+    },
+    {
+      "name": "cron-every-30-across-fold",
+      "checkpoint": {
+        "id": "c",
+        "cron": "*/30 1 * * *"
+      },
+      "zone": "America/Detroit",
+      "from": "2026-11-01T04:00:00.000Z",
+      "to": "2026-11-01T08:00:00.000Z",
+      "expected": [
+        "2026-11-01T05:00:00.000Z",
+        "2026-11-01T05:30:00.000Z"
+      ]
+    },
+    {
+      "name": "fold-offset-is-absolute",
+      "checkpoint": {
+        "id": "c",
+        "time": "01:30",
+        "offsetMinutes": 30
+      },
+      "zone": "America/Detroit",
+      "from": "2026-11-01T05:00:00.000Z",
+      "to": "2026-11-01T07:00:00.000Z",
+      "expected": [
+        "2026-11-01T06:00:00.000Z"
+      ],
+      "note": "01:30 EDT + 30 min = 01:00 EST (06:00Z), not 02:00 wall-clock"
+    },
+    {
+      "name": "weekday-cron-in-participant-zone",
+      "checkpoint": {
+        "id": "every-30",
+        "cron": "*/30 * * * 1-5"
+      },
+      "zone": "America/Detroit",
+      "from": "2026-09-25T23:50:00.000Z",
+      "to": "2026-09-26T00:40:00.000Z",
+      "expected": [
+        "2026-09-26T00:00:00.000Z",
+        "2026-09-26T00:30:00.000Z"
+      ],
+      "note": "Friday 20:00/20:30 in Detroit is Saturday UTC; must still fire"
+    },
+    {
+      "name": "same-cron-in-utc-does-not-fire",
+      "checkpoint": {
+        "id": "every-30",
+        "cron": "*/30 * * * 1-5"
+      },
+      "zone": "UTC",
+      "from": "2026-09-25T23:50:00.000Z",
+      "to": "2026-09-26T00:40:00.000Z",
+      "expected": [],
+      "note": "why system tasks require timeZone (plan Run 5)"
+    },
+    {
+      "name": "date-line-plus-14",
+      "checkpoint": {
+        "id": "c",
+        "time": "00:00"
+      },
+      "zone": "Pacific/Kiritimati",
+      "from": "2026-09-21T00:00:00.000Z",
+      "to": "2026-09-23T00:00:00.000Z",
+      "expected": [
+        "2026-09-21T10:00:00.000Z",
+        "2026-09-22T10:00:00.000Z"
+      ]
+    },
+    {
+      "name": "date-line-minus-11",
+      "checkpoint": {
+        "id": "c",
+        "time": "00:00"
+      },
+      "zone": "Pacific/Pago_Pago",
+      "from": "2026-09-21T00:00:00.000Z",
+      "to": "2026-09-23T00:00:00.000Z",
+      "expected": [
+        "2026-09-21T11:00:00.000Z",
+        "2026-09-22T11:00:00.000Z"
+      ]
+    },
+    {
+      "name": "days-of-week-filter",
+      "checkpoint": {
+        "id": "c",
+        "time": "09:00",
+        "daysOfWeek": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "zone": "America/Detroit",
+      "from": "2026-09-25T00:00:00.000Z",
+      "to": "2026-09-29T00:00:00.000Z",
+      "expected": [
+        "2026-09-25T13:00:00.000Z",
+        "2026-09-28T13:00:00.000Z"
+      ],
+      "note": "Fri 25 and Mon 28; weekend skipped"
+    },
+    {
+      "name": "window-open-start-closed-end",
+      "checkpoint": {
+        "id": "c",
+        "cron": "0 * * * *"
+      },
+      "zone": "UTC",
+      "from": "2026-09-22T14:00:00.000Z",
+      "to": "2026-09-22T15:00:00.000Z",
+      "expected": [
+        "2026-09-22T15:00:00.000Z"
+      ],
+      "note": "14:00 excluded (from), 15:00 included (to)"
+    },
+    {
+      "name": "catch-up-window-enumerates-all",
+      "checkpoint": {
+        "id": "c",
+        "cron": "*/2 * * * *"
+      },
+      "zone": "UTC",
+      "from": "2026-09-22T14:55:00.000Z",
+      "to": "2026-09-22T15:00:00.000Z",
+      "expected": [
+        "2026-09-22T14:56:00.000Z",
+        "2026-09-22T14:58:00.000Z",
+        "2026-09-22T15:00:00.000Z"
+      ]
+    },
+    {
+      "name": "preference-with-offset",
+      "checkpoint": {
+        "id": "wake",
+        "preference": "wakeupTime",
+        "offsetMinutes": 15
+      },
+      "zone": "Europe/Berlin",
+      "resolvedTime": "07:30",
+      "from": "2026-09-22T05:00:00.000Z",
+      "to": "2026-09-22T06:00:00.000Z",
+      "expected": [
+        "2026-09-22T05:45:00.000Z"
+      ],
+      "note": "07:30 CEST + 15 min = 05:45Z"
+    }
+  ],
+  "invalidCheckpoints": [
+    {
+      "name": "six-field-cron-rejected",
+      "checkpoint": {
+        "id": "c",
+        "cron": "0 */5 * * * *"
+      },
+      "code": "invalid-checkpoint"
+    },
+    {
+      "name": "twelve-hour-time-rejected",
+      "checkpoint": {
+        "id": "c",
+        "time": "8:00 AM"
+      },
+      "code": "invalid-checkpoint"
+    },
+    {
+      "name": "hour-24-rejected",
+      "checkpoint": {
+        "id": "c",
+        "time": "24:00"
+      },
+      "code": "invalid-checkpoint"
+    },
+    {
+      "name": "offset-out-of-range",
+      "checkpoint": {
+        "id": "c",
+        "time": "08:00",
+        "offsetMinutes": 1441
+      },
+      "code": "invalid-checkpoint"
+    },
+    {
+      "name": "non-integer-offset",
+      "checkpoint": {
+        "id": "c",
+        "time": "08:00",
+        "offsetMinutes": 1.5
+      },
+      "code": "invalid-checkpoint"
+    },
+    {
+      "name": "day-of-week-zero",
+      "checkpoint": {
+        "id": "c",
+        "time": "08:00",
+        "daysOfWeek": [
+          0
+        ]
+      },
+      "code": "invalid-checkpoint"
+    },
+    {
+      "name": "two-kinds-at-once",
+      "checkpoint": {
+        "id": "c",
+        "time": "08:00",
+        "cron": "0 8 * * *"
+      },
+      "code": "invalid-checkpoint"
+    }
+  ]
+}

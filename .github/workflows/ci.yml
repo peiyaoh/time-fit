@@ -1,0 +1,122 @@
+name: CI
+
+on:
+  push:
+    branches: [main, refactor-1]
+  pull_request:
+    branches: [main, refactor-1]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (Yarn 4 / Berry)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma client
+        # The legacy packages and apps import @prisma/client, which throws at import time
+        # until a client is generated. Local machines already had one, so CI failed here
+        # from its first run. The quarantined Mongo schema matches the legacy client.
+        run: yarn prisma generate --schema contrib/legacy/prisma/schema.prisma
+
+      - name: Run tests
+        # The root script pins TZ=America/New_York: the legacy executor evaluates cron in the
+        # server's zone (ADR 0006, legacy defect #1) and its tests assume New York. The core
+        # coverage step below runs in CI's native UTC, so @time-fit/core is still checked
+        # against a zone that differs from its test participants'.
+        run: yarn test
+
+      - name: Check published candidate dependencies and imports
+        run: node scripts/check-core-dependencies.mjs
+
+      - name: Check workspace dependency boundaries
+        run: yarn depcruise --config .dependency-cruiser.cjs packages
+
+      - name: "@time-fit/core coverage (100% required)"
+        run: yarn workspace @time-fit/core test:coverage
+
+      - name: "@time-fit/storage-prisma coverage (100% required)"
+        run: yarn workspace @time-fit/storage-prisma test:coverage
+
+      - name: "@time-fit/integrations coverage (100% required)"
+        run: yarn workspace @time-fit/integrations test:coverage
+
+  packed-quickstart:
+    name: Packed install + quickstarts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Pack core, Prisma storage, and integrations into empty directories, run examples
+        # No workspace install on purpose: only the tarball's declared dependencies exist.
+        run: ./scripts/verify-packed-quickstart.sh
+
+  smoke-fitbit-break:
+    name: Smoke build - fitbit-break (Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (Yarn 4 / Berry)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma client
+        # The legacy packages and apps import @prisma/client, which throws at import time
+        # until a client is generated. Local machines already had one, so CI failed here
+        # from its first run. The quarantined Mongo schema matches the legacy client.
+        run: yarn prisma generate --schema contrib/legacy/prisma/schema.prisma
+
+      - name: Build contrib/legacy/fitbit-break
+        working-directory: contrib/legacy/fitbit-break
+        # Dummy env values so `next build` can statically evaluate config/imports
+        # that reference process.env; no live Prisma/Twilio/Fitbit credentials
+        # are used or required for a build-only smoke check.
+        env:
+          DATABASE_URL: "postgresql://user:pass@localhost:5432/db"
+        run: yarn build
+
+  smoke-take-a-break:
+    name: Smoke boot - take-a-break
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable Corepack (Yarn 4 / Berry)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Run a deterministic apps/take-a-break tick
+        run: |
+          node --input-type=module -e '
+            import { runTakeABreakTick } from "./apps/take-a-break/index.js";
+            const notifier = { notify: async () => "smoke" };
+            const summary = await runTakeABreakTick(new Date("2026-09-22T14:30:00.000Z"), { desktopNotifier: notifier });
+            if (summary.counts.completed !== 1) throw new Error(`expected one completed delivery, got ${summary.counts.completed}`);
+          '

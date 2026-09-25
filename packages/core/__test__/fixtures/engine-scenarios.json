@@ -1,0 +1,1031 @@
+{
+  "$comment": "ADR 0001-0005 engine scenarios for Stage C2, run against the memory store with the fixture plugins in README.md. `subject`+taskId+checkpointId+scheduledAt identify a record (tests compute decisionId); listed fields must match, unlisted fields are not asserted. `records` is the complete set in the store. Default options: catchUpWindowMinutes 5, concurrency 1, no studySalt.",
+  "scenarios": [
+    {
+      "name": "ineligible-produces-no-record",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        },
+        {
+          "id": "bob",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ],
+          "eligibility": {
+            "participantIds": [
+              "alice"
+            ]
+          }
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "completed"
+          }
+        ],
+        "actionCalls": 1,
+        "summary": {
+          "ineligible": 1
+        }
+      }
+    },
+    {
+      "name": "unavailable-is-recorded",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ],
+          "precondition": {
+            "condition": {
+              "type": "fixture-not-met"
+            }
+          }
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "unavailable",
+            "reasons": [
+              "precondition-not-met"
+            ]
+          }
+        ],
+        "actionCalls": 0
+      }
+    },
+    {
+      "name": "log-unavailable-false-skips-record",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ],
+          "precondition": {
+            "condition": {
+              "type": "fixture-not-met"
+            }
+          },
+          "logUnavailable": false
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [],
+        "actionCalls": 0,
+        "summary": {
+          "unavailable": 1
+        }
+      }
+    },
+    {
+      "name": "condition-error-wins-over-any",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ],
+          "precondition": {
+            "any": [
+              {
+                "condition": {
+                  "type": "fixture-error"
+                }
+              },
+              {
+                "condition": {
+                  "type": "fixture-met"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "unavailable",
+            "reasons": [
+              "condition-error"
+            ]
+          }
+        ],
+        "actionCalls": 0
+      },
+      "note": "left-to-right short-circuit evaluates fixture-error first; an errored condition is never treated as met"
+    },
+    {
+      "name": "condition-throws-is-contained",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        },
+        {
+          "id": "bob",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ],
+          "precondition": {
+            "condition": {
+              "type": "fixture-throws"
+            }
+          }
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "unavailable",
+            "reasons": [
+              "condition-error"
+            ]
+          },
+          {
+            "subject": "p:bob",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "unavailable",
+            "reasons": [
+              "condition-error"
+            ]
+          }
+        ],
+        "actionCalls": 0
+      },
+      "note": "one participant's throwing condition must not abort the tick for others"
+    },
+    {
+      "name": "action-throws-records-failed",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-throws"
+              }
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "failed",
+            "errorCode": "plugin-threw"
+          }
+        ]
+      }
+    },
+    {
+      "name": "null-arm-completed-without-delivery",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "control",
+              "probability": 1,
+              "action": null
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "completed",
+            "armId": "control"
+          }
+        ],
+        "actionCalls": 0
+      }
+    },
+    {
+      "name": "edit-during-window-no-duplicate",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ]
+        }
+      ],
+      "options": {
+        "catchUpWindowMinutes": 5
+      },
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        },
+        {
+          "replaceTask": {
+            "id": "walk-prompt",
+            "scope": "participant",
+            "checkpoints": [
+              {
+                "id": "morning",
+                "time": "09:00"
+              }
+            ],
+            "outcomes": [
+              {
+                "id": "notify",
+                "probability": 1,
+                "action": {
+                  "type": "fixture-record",
+                  "message": "Edited text"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "restart": true
+        },
+        {
+          "tick": "2026-09-22T09:03:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "completed",
+            "taskVersionIsOriginal": true
+          }
+        ],
+        "actionCalls": 1,
+        "summary_lastTick": {
+          "skippedClaimed": 1
+        }
+      },
+      "note": "restart forgets lastTick; the window re-covers 09:00; same decisionId -> claim returns false"
+    },
+    {
+      "name": "restart-catch-up-executes-once",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ]
+        }
+      ],
+      "options": {
+        "catchUpWindowMinutes": 5
+      },
+      "steps": [
+        {
+          "tick": "2026-09-22T08:58:00.000Z"
+        },
+        {
+          "restart": true
+        },
+        {
+          "tick": "2026-09-22T09:02:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "completed",
+            "latenessMs": 120000
+          }
+        ],
+        "actionCalls": 1
+      }
+    },
+    {
+      "name": "missed-window-records-gap",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            },
+            {
+              "id": "half",
+              "time": "09:30"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ]
+        }
+      ],
+      "options": {
+        "catchUpWindowMinutes": 5
+      },
+      "steps": [
+        {
+          "tick": "2026-09-22T08:50:00.000Z"
+        },
+        {
+          "tick": "2026-09-22T09:40:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [],
+        "actionCalls": 0,
+        "gaps": [
+          {
+            "from": "2026-09-22T08:50:00.000Z",
+            "to": "2026-09-22T09:35:00.000Z"
+          }
+        ],
+        "logEvents": [
+          "scheduler-missed-window"
+        ]
+      }
+    },
+    {
+      "name": "system-task-uses-its-time-zone",
+      "participants": [],
+      "tasks": [
+        {
+          "id": "take-a-break",
+          "scope": "system",
+          "timeZone": "America/Detroit",
+          "checkpoints": [
+            {
+              "id": "every-30",
+              "cron": "*/30 * * * 1-5"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record"
+              }
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-26T00:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "s:system",
+            "taskId": "take-a-break",
+            "checkpointId": "every-30",
+            "scheduledAt": "2026-09-26T00:00:00.000Z",
+            "state": "completed"
+          }
+        ],
+        "actionCalls": 1
+      },
+      "note": "Friday 20:00 in Detroit (Saturday UTC) fires; participants port is not called for system-only task sets"
+    },
+    {
+      "name": "invalid-timezone-participant-skipped",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        },
+        {
+          "id": "carol",
+          "timeZone": "+05:00"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "completed"
+          }
+        ],
+        "summary": {
+          "participantInvalidTimezone": 1
+        }
+      }
+    },
+    {
+      "name": "concurrent-invocations-single-delivery",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "concurrentTicks": {
+            "engines": 2,
+            "sharedStore": true,
+            "now": "2026-09-22T09:00:00.000Z"
+          }
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "completed"
+          }
+        ],
+        "actionCalls": 1
+      },
+      "note": "two engine instances over one store; unique claim decides"
+    },
+    {
+      "name": "in-flight-tick-is-skipped",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-gate"
+              }
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "tickWithoutAwait": "2026-09-22T09:00:00.000Z"
+        },
+        {
+          "tick": "2026-09-22T09:01:00.000Z",
+          "expectResult": {
+            "skipped": "in-flight"
+          }
+        },
+        {
+          "releaseGate": true
+        },
+        {
+          "awaitPending": true
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "completed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "coincident-checkpoints-are-separate-decisions",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "a",
+              "time": "09:00"
+            },
+            {
+              "id": "b",
+              "cron": "0 9 * * *"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "a",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "completed"
+          },
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "b",
+            "scheduledAt": "2026-09-22T09:00:00.000Z",
+            "state": "completed"
+          }
+        ],
+        "actionCalls": 2
+      }
+    },
+    {
+      "name": "priority-orders-tasks-per-participant",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "later",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ],
+          "priority": 10
+        },
+        {
+          "id": "sooner",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ],
+          "priority": 5
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "actionCallOrder": [
+          "sooner",
+          "later"
+        ]
+      }
+    },
+    {
+      "name": "randomization-reproducible",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "America/Detroit"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "prompt",
+              "probability": 0.6,
+              "action": {
+                "type": "fixture-record"
+              }
+            },
+            {
+              "id": "control",
+              "probability": 0.4,
+              "action": null
+            }
+          ]
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-03-09T13:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [
+          {
+            "subject": "p:alice",
+            "taskId": "walk-prompt",
+            "checkpointId": "morning",
+            "scheduledAt": "2026-03-09T13:00:00.000Z",
+            "state": "completed",
+            "armId": "prompt",
+            "draw": 0.43380247781113035,
+            "decisionId": "f011f5907e3e40da7d58a19fa2c9f119ee4321f3a7f47c5d216112334136c727"
+          }
+        ]
+      },
+      "note": "must agree with identity.json decisionIds[0] and seeds[0]"
+    },
+    {
+      "name": "inactive-before-active-from",
+      "participants": [
+        {
+          "id": "alice",
+          "timeZone": "UTC"
+        }
+      ],
+      "tasks": [
+        {
+          "id": "walk-prompt",
+          "scope": "participant",
+          "checkpoints": [
+            {
+              "id": "morning",
+              "time": "09:00"
+            }
+          ],
+          "outcomes": [
+            {
+              "id": "notify",
+              "probability": 1,
+              "action": {
+                "type": "fixture-record",
+                "message": "Time to walk"
+              }
+            }
+          ],
+          "activeFrom": "2026-09-22T09:00:00.001Z"
+        }
+      ],
+      "steps": [
+        {
+          "tick": "2026-09-22T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "records": [],
+        "summary": {
+          "ineligible": 1
+        }
+      }
+    }
+  ]
+}
