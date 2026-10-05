@@ -31,6 +31,29 @@ aborts at stage `tasks` instead of silently skipping tasks. This is a cap on can
 the database. The engine's own `options.maxTasks` (default 500) separately caps how many tasks it
 evaluates, so set the adapter's `maxTasks` at least as high as the engine's.
 
+## Participant shape
+
+`participants.iterate` returns each row as `{ id, timeZone, attributes }`, where `attributes` is
+the row's `Participant.attributes` JSON value. The key is omitted when the column is null. Custom
+fields stay under `attributes`, so they can never collide with `id` or `timeZone`. Refer to them
+with an `attributes.` prefix wherever core or an integration reads a participant path:
+
+```js
+// Eligibility (ADR 0001): only the pilot cohort.
+eligibility: { attributes: { mode: "all", match: { "attributes.cohort": ["pilot"] } } }
+
+// Integrations read the recipient from the participant; point them at the nested field.
+twilioSmsAction({ client, from, phonePath: "attributes.phone" });
+mailjetEmailAction({ client, from, emailPath: "attributes.email" });
+```
+
+A participant whose `attributes` is null has no `attributes.*` values. It does not match an
+`attributes.*` eligibility filter, and the Twilio and Mailjet actions fail its decisions with
+`missing-phone-destination` or `missing-email-destination`. The memory store returns participants
+exactly as you supply them, so use the same nested shape there if a study runs on both stores.
+
+## Claims
+
 `Decision.decisionId` is the unique atomic claim key. A same-token re-claim succeeds; a
 different token is refused; terminal transitions update only a claimed record. This gives core's
 at-most-once delivery semantics, not delivery retry semantics.

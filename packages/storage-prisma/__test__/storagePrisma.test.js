@@ -6,6 +6,7 @@ import { join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { createTimeEngine } from "@time-fit/core";
 import { decisionLogConformanceChecks } from "@time-fit/core/testing";
+import { twilioSmsAction } from "@time-fit/integrations/twilio";
 import { createPrismaStorage } from "../src/index.js";
 import { PrismaClient } from "./generated/index.js";
 
@@ -163,6 +164,31 @@ test("old tasks that expired before the window do not count toward capacity", as
   ] });
   const { tasks } = createPrismaStorage({ prisma, maxTasks: 1 });
   expect(await tasks.listActive(at, { windowFrom: new Date("2026-09-22T08:57:00.000Z") })).toEqual([{ id: "live" }]);
+});
+
+test("nested participant attributes reach eligibility and a delivery action through SQLite", async () => {
+  await prisma.participant.createMany({ data: [
+    { id: "ada", timeZone: "UTC", attributes: { cohort: "pilot", phone: "+15550002" } },
+    { id: "bob", timeZone: "UTC", attributes: { cohort: "control", phone: "+15550003" } },
+    { id: "cy", timeZone: "UTC" },
+  ] });
+  const sent = [];
+  const engine = createTimeEngine({
+    storage: createPrismaStorage({ prisma }),
+    tasks: [{
+      id: "pilot-sms",
+      scope: "participant",
+      eligibility: { attributes: { mode: "all", match: { "attributes.cohort": ["pilot"] } } },
+      checkpoints: [{ id: "morning", time: "09:00" }],
+      outcomes: [{ id: "send", probability: 1, action: { type: "twilio-sms", body: "Time to move" } }],
+    }],
+    actions: [twilioSmsAction({ client: { messages: { create: async (message) => { sent.push(message.to); return { sid: "SM1" }; } } }, from: "+15550001", phonePath: "attributes.phone" })],
+  });
+
+  const summary = await engine.tick(TICK_AT);
+
+  expect(summary.counts).toMatchObject({ ineligible: 2, completed: 1 });
+  expect(sent).toEqual(["+15550002"]);
 });
 
 test("rejects malformed adapter input at the port boundary", async () => {

@@ -25,6 +25,24 @@ idempotency field, so the adapter records the decision ID in its returned delive
 does not claim provider-level duplicate suppression. A pre-aborted `ctx.signal` prevents a
 request; these SDK method shapes do not expose an abort signal for an in-flight request.
 
+## Recipients
+
+`twilioSmsAction` reads the phone number at `phonePath` (default `"phone"`) and
+`mailjetEmailAction` reads the email address at `emailPath` (default `"email"`). Both paths are
+dotted own-property paths into the participant the engine passes to the action. The defaults suit
+flat participants such as `{ id, timeZone, phone }`. `@time-fit/storage-prisma` nests custom
+fields under `attributes`, so with it use:
+
+```js
+twilioSmsAction({ client, from: "+15550001", phonePath: "attributes.phone" });
+mailjetEmailAction({ client, from: { email: "study@example.org", name: "Study" }, emailPath: "attributes.email" });
+```
+
+If the value at the path is missing or blank, the decision fails with
+`missing-phone-destination` or `missing-email-destination`, and nothing is sent.
+
+## Results and errors
+
 Each factory returns a frozen core Action. Missing participant destinations return a typed
 ActionResult error rather than throwing; provider exceptions become `{ ok: false, error }` with
 code `twilio-send-failed` or `mailjet-send-failed` and the provider's message. That message is

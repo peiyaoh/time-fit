@@ -46,6 +46,7 @@
   "devDependencies": {
     "@prisma/client": "6.10.0",
     "@time-fit/core": "workspace:*",
+    "@time-fit/integrations": "workspace:*",
     "cross-env": "^7.0.3",
     "jest": "^29.7.0",
     "prisma": "^6.5.0",

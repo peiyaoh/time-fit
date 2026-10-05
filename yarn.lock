@@ -2200,6 +2200,7 @@ __metadata:
   dependencies:
     "@prisma/client": "npm:6.10.0"
     "@time-fit/core": "workspace:*"
+    "@time-fit/integrations": "workspace:*"
     cross-env: "npm:^7.0.3"
     jest: "npm:^29.7.0"
     prisma: "npm:^6.5.0"
