@@ -70,3 +70,30 @@ const cursor: string = page.nextCursor;
 // @ts-expect-error maxTasks is a number
 createPrismaStorage({ prisma: prismaStorage as never, maxTasks: "500" });
 void cursor;
+
+// Application participant interfaces need no index signature.
+interface StudyParticipant { id: string; timeZone: string; phone: string }
+declare const studyParticipant: StudyParticipant;
+const typedStore = createMemoryStore({ participants: [studyParticipant] });
+typedStore.participants.add({ id: "bo", timeZone: "UTC", phone: "+15550003", cohort: "pilot" });
+const pagedPort = { iterate: async () => ({ items: [studyParticipant], nextCursor: null }) };
+createTimeEngine({ storage: typedStore, participants: pagedPort });
+
+// A preference resolver must handle the null participant of system-scope tasks.
+createTimeEngine({
+  storage: store,
+  preferenceResolver: async (participant) => ({ ok: true, value: participant === null ? "09:00" : "10:00" }),
+});
+// @ts-expect-error participant can be null
+createTimeEngine({ storage: store, preferenceResolver: async (participant) => ({ ok: true, value: participant.id }) });
+
+// @ts-expect-error no task source, directly or in storage
+createTimeEngine({ decisionLog: store.decisionLog });
+// @ts-expect-error a system task needs a time zone
+createTimeEngine({ storage: store, tasks: [{ id: "daily", scope: "system", checkpoints, outcomes: [] }] });
+// @ts-expect-error known task fields are typed
+createTimeEngine({ storage: store, tasks: [{ id: "bad", scope: "system", timeZone: 123, checkpoints: "oops", outcomes: false }] });
+// @ts-expect-error unknown task field
+createTimeEngine({ storage: store, tasks: [{ id: "x", scope: "participant", checkpoints, outcomes: [], typo: 1 }] });
+// @ts-expect-error a checkpoint needs cron, time, or preference
+createTimeEngine({ storage: store, tasks: [{ id: "x", scope: "participant", checkpoints: [{ id: "c", at: "09:00" }], outcomes: [] }] });

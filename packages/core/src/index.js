@@ -25,6 +25,11 @@ export { timeWindowCondition } from "./builtins/timeWindowCondition.js";
  * @typedef {import("./contracts.js").SkippedTick} SkippedTick
  * @typedef {import("./contracts.js").TickOutcome} TickOutcome
  * @typedef {import("./contracts.js").Participant} Participant
+ * @typedef {import("./contracts.js").ParticipantInput} ParticipantInput
+ * @typedef {import("./contracts.js").CheckpointInput} CheckpointInput
+ * @typedef {import("./contracts.js").ActionNode} ActionNode
+ * @typedef {import("./contracts.js").PreconditionInput} PreconditionInput
+ * @typedef {import("./contracts.js").EligibilityInput} EligibilityInput
  * @typedef {import("./contracts.js").ParticipantPage} ParticipantPage
  * @typedef {import("./contracts.js").ParticipantsPort} ParticipantsPort
  * @typedef {import("./contracts.js").TaskSpecInput} TaskSpecInput

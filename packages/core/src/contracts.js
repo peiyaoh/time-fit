@@ -3,19 +3,63 @@
 // ports actually accept and return.
 
 /**
- * A participant as a participants port returns it. Core reads only `id` and `timeZone`; every
- * other field is opaque and reachable by dotted paths (ADR 0001).
- * @typedef {{ id: string, timeZone: string } & Record<string, unknown>} Participant
+ * What a participants port must supply. Core reads only `id` and `timeZone`; any other fields
+ * are passed through and reachable by dotted paths (ADR 0001). Application interfaces with
+ * extra fields are assignable.
+ * @typedef {{ id: string, timeZone: string }} ParticipantInput
  */
 
 /**
- * A task spec as supplied to the engine. It is validated at runtime (ADR 0006).
- * @typedef {{ id: string, scope: "participant" | "system" } & Record<string, unknown>} TaskSpecInput
+ * A participant as the engine hands it to plugins and hooks: the supplied object, copied and
+ * frozen, with its extra fields readable as `unknown`.
+ * @typedef {ParticipantInput & Record<string, unknown>} Participant
+ */
+
+/**
+ * @typedef {{ id: string, cron: string, offsetMinutes?: number }
+ *   | { id: string, time: string, daysOfWeek?: number[], offsetMinutes?: number }
+ *   | { id: string, preference: string, daysOfWeek?: number[], offsetMinutes?: number }} CheckpointInput  (ADR 0005)
+ */
+
+/**
+ * An action node in a task spec: the registered plugin `type` plus that plugin's params.
+ * @typedef {{ type: string } & Record<string, unknown>} ActionNode
+ */
+
+/**
+ * @typedef {{ all: PreconditionInput[] } | { any: PreconditionInput[] } | { not: PreconditionInput }
+ *   | { condition: { type: string } & Record<string, unknown> }} PreconditionInput  (ADR 0006)
+ */
+
+/**
+ * @typedef {object} EligibilityInput  (ADR 0001 §3)
+ * @property {string[]} [participantIds]
+ * @property {{ mode: "all" | "any", match: Record<string, Array<string | number | boolean | null>> }} [attributes]
+ */
+
+/**
+ * @typedef {object} TaskSpecFields
+ * @property {string} id
+ * @property {boolean} [enabled]
+ * @property {number} [priority]
+ * @property {string} [activeFrom]   ISO instant with an explicit offset
+ * @property {string} [activeUntil]  ISO instant with an explicit offset
+ * @property {EligibilityInput} [eligibility]
+ * @property {CheckpointInput[]} checkpoints
+ * @property {PreconditionInput} [precondition]
+ * @property {Array<{ id: string, probability: number, action: ActionNode | null }>} outcomes
+ * @property {boolean} [logUnavailable]
+ */
+
+/**
+ * A task spec as supplied to the engine (ADR 0006). The engine still validates it at runtime,
+ * for specs loaded from storage and for value ranges the types cannot express.
+ * @typedef {(TaskSpecFields & { scope: "participant" }) | (TaskSpecFields & { scope: "system", timeZone: string })} TaskSpecInput
  */
 
 /**
  * @typedef {object} ParticipantPage
- * @property {ReadonlyArray<Participant>} items  non-empty unless `nextCursor` is null (ADR 0013)
+ * @property {ReadonlyArray<ParticipantInput>} items  non-empty unless `nextCursor` is null (ADR 0013)
  * @property {string | null} nextCursor
  */
 
@@ -173,14 +217,22 @@
  */
 
 /**
+ * @typedef {{ decisionLog: DecisionLogPort } | { storage: { decisionLog: DecisionLogPort } }} DecisionLogSource
+ * @typedef {{ tasks: ReadonlyArray<TaskSpecInput> | TasksPort } | { storage: { tasks: TasksPort } }} TaskSource
+ */
+
+/**
  * Fields shared by both ways of supplying the decision log. Plugin arrays accept plugins with
  * any params type (`never` makes every specific `ActionPlugin<P>` assignable).
  * @typedef {object} EngineConfigBase
+ * @property {StoragePorts} [storage]
  * @property {ParticipantsPort} [participants]   required at runtime for participant-scope tasks
  * @property {ReadonlyArray<TaskSpecInput> | TasksPort} [tasks]  static specs, or a port
+ * @property {DecisionLogPort} [decisionLog]
  * @property {ReadonlyArray<ConditionPlugin<never>>} [conditions]
  * @property {ReadonlyArray<ActionPlugin<never>>} [actions]
- * @property {(participant: Readonly<Participant>, request: { taskId: string, checkpointId: string, preference: string }, localDate: string) => Promise<{ ok: true, value: string } | { ok: false, error: { code: string, message: string } }>} [preferenceResolver]
+ * @property {(participant: Readonly<Participant> | null, request: { taskId: string, checkpointId: string, preference: string }, localDate: string) => Promise<{ ok: true, value: string } | { ok: false, error: { code: string, message: string } }>} [preferenceResolver]
+ *   `participant` is null for system-scope tasks
  * @property {{ now: () => Date }} [clock]
  * @property {(seed: string) => number} [random]  returns a number in [0, 1)
  * @property {Logger} [logger]
@@ -190,9 +242,9 @@
  */
 
 /**
- * `createTimeEngine` input. A decision log is required, either directly or inside `storage`.
- * @typedef {(EngineConfigBase & { decisionLog: DecisionLogPort, storage?: StoragePorts })
- *   | (EngineConfigBase & { decisionLog?: DecisionLogPort, storage: StoragePorts & { decisionLog: DecisionLogPort } })} EngineConfig
+ * `createTimeEngine` input. A decision log and a task source (static specs or a tasks port) are
+ * required, each either directly or inside `storage`.
+ * @typedef {EngineConfigBase & DecisionLogSource & TaskSource} EngineConfig
  */
 
 /**
