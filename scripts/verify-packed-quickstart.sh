@@ -63,21 +63,12 @@ mkdir "$types_dir"
 cd "$types_dir"
 npm init -y >/dev/null
 npm pkg set type=module >/dev/null
-npm install --silent --no-audit --no-fund "../$core_tarball" "../$storage_tarball" "../$integrations_tarball" @prisma/client@6.10.0
-cat > index.ts <<'EOF'
-import { createTimeEngine } from "@time-fit/core";
-import { createMemoryStore } from "@time-fit/core/memory";
-import { decisionLogConformanceChecks } from "@time-fit/core/testing";
-import { createPrismaStorage } from "@time-fit/storage-prisma";
-import { desktopNotificationAction } from "@time-fit/integrations/desktop";
-import { twilioSmsAction } from "@time-fit/integrations/twilio";
-import { mailjetEmailAction } from "@time-fit/integrations/mailjet";
-
-void [createTimeEngine, createMemoryStore, decisionLogConformanceChecks, createPrismaStorage,
-  desktopNotificationAction, twilioSmsAction, mailjetEmailAction];
-EOF
-"$repo_root/node_modules/.bin/tsc" --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 --skipLibCheck index.ts
-echo "packed TypeScript public imports OK"
+npm install --silent --no-audit --no-fund "../$core_tarball" "../$storage_tarball" "../$integrations_tarball"
+# Compiles real usage of the published declarations under --strict with library checking on.
+# Each @ts-expect-error line in the consumer must fail, proving the types reject that misuse.
+cp "$repo_root/scripts/packed-types-consumer.ts" index.ts
+"$repo_root/node_modules/.bin/tsc" --noEmit --strict --module NodeNext --moduleResolution NodeNext --target ES2022 index.ts
+echo "packed TypeScript strict usage OK"
 
 integrations_dir="$work_dir/integrations-example"
 mkdir "$integrations_dir"

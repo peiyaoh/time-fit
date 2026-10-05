@@ -1,6 +1,15 @@
 import { assertFactoryClient, assertSafePath, assertTextOption, abortedResult, destinationFor, freezeAction, providerFailure, validateMailjetParams } from "./shared.js";
 
-/** @param {{ client: { post: Function }, from: { email: string, name: string }, emailPath?: string }} options */
+/**
+ * @typedef {{ subject: string, text?: string, html?: string }} MailjetEmailParams  text or html is required
+ * @typedef {{ post: (resource: "send", options: { version: "v3.1" }) => { request: (body: { Messages: object[] }) => Promise<unknown> } }} MailjetSendClient
+ *   the subset of the node-mailjet client the action calls
+ */
+
+/**
+ * @param {{ client: MailjetSendClient, from: { email: string, name: string }, emailPath?: string }} options
+ * @returns {Readonly<import("@time-fit/core").ActionPlugin<MailjetEmailParams>>}
+ */
 export function mailjetEmailAction({ client, from, emailPath = "email" } = {}) {
   assertFactoryClient(client, ["post"], "mailjetEmailAction");
   const sender = Object.freeze({ Email: assertTextOption(from?.email, "from.email", "mailjetEmailAction"), Name: assertTextOption(from?.name, "from.name", "mailjetEmailAction") });

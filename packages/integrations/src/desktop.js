@@ -2,7 +2,16 @@ import { abortedResult, assertFactoryClient, assertTextOption, freezeAction, pro
 
 const DEFAULT_TITLE = "TimeFit";
 
-/** @param {{ notifier: { notify: Function }, title?: string }} options */
+/**
+ * @typedef {{ message: string }} DesktopNotificationParams
+ * @typedef {{ notify: (options: { title: string, message: string, sound: boolean, wait: boolean }, callback: (error: Error | null | undefined, response?: unknown, metadata?: unknown) => void) => unknown }} DesktopNotifier
+ *   node-notifier's shape: completion comes from the callback unless notify returns a promise
+ */
+
+/**
+ * @param {{ notifier: DesktopNotifier, title?: string }} options
+ * @returns {Readonly<import("@time-fit/core").ActionPlugin<DesktopNotificationParams>>}
+ */
 export function desktopNotificationAction({ notifier, title = DEFAULT_TITLE } = {}) {
   assertFactoryClient(notifier, ["notify"], "desktopNotificationAction");
   const notificationTitle = assertTextOption(title, "title", "desktopNotificationAction");

@@ -14,10 +14,24 @@ const MAX_GAPS = 1_000;
 const CLAIMABLE_STATES = new Set(["claimed", "unavailable"]);
 
 /**
- * @param {{ participants?: object[], tasks?: object[], retentionMinutes?: number, maxRecords?: number }} [options]
+ * @typedef {import("../contracts.js").Participant} Participant
+ * @typedef {import("../contracts.js").TaskSpecInput} TaskSpecInput
+ * @typedef {import("../contracts.js").DecisionRecord} DecisionRecord
+ */
+
+/**
+ * @typedef {object} MemoryStore
+ * @property {import("../contracts.js").ParticipantsPort & { add: (participant: Participant) => void }} participants
+ * @property {import("../contracts.js").TasksPort & { list: () => TaskSpecInput[], upsert: (spec: TaskSpecInput) => void, remove: (taskId: string) => void }} tasks
+ * @property {import("../contracts.js").DecisionLogPort & { recordGap: NonNullable<import("../contracts.js").DecisionLogPort["recordGap"]>, get: (decisionId: string) => DecisionRecord | undefined, records: () => DecisionRecord[], gaps: () => Array<{ from: string, to: string, tickId: string }> }} decisionLog
+ */
+
+/**
+ * @param {{ participants?: ReadonlyArray<Participant>, tasks?: ReadonlyArray<TaskSpecInput>, retentionMinutes?: number, maxRecords?: number }} [options]
  *   retentionMinutes must be at least the engine's catchUpWindowMinutes, or restarts could re-deliver.
  *   Retention pruning follows insertion order; an out-of-order `scheduledAt` record after an
  *   in-window record can remain until later cap eviction.
+ * @returns {Readonly<MemoryStore>}
  */
 export function createMemoryStore({
   participants = [],

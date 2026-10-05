@@ -1,6 +1,15 @@
 import { assertFactoryClient, assertSafePath, assertTextOption, abortedResult, destinationFor, freezeAction, providerFailure, validateTextParams } from "./shared.js";
 
-/** @param {{ client: { messages: { create: Function } }, from: string, phonePath?: string }} options */
+/**
+ * @typedef {{ body: string }} TwilioSmsParams
+ * @typedef {{ messages: { create: (message: { to: string, from: string, body: string }) => Promise<unknown> } }} TwilioMessagesClient
+ *   the subset of the Twilio SDK client the action calls
+ */
+
+/**
+ * @param {{ client: TwilioMessagesClient, from: string, phonePath?: string }} options
+ * @returns {Readonly<import("@time-fit/core").ActionPlugin<TwilioSmsParams>>}
+ */
 export function twilioSmsAction({ client, from, phonePath = "phone" } = {}) {
   assertFactoryClient(client, ["messages", "create"], "twilioSmsAction");
   const sender = assertTextOption(from, "from", "twilioSmsAction");

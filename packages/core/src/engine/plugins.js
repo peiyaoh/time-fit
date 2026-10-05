@@ -2,33 +2,10 @@ import { boundError } from "../boundedError.js";
 import { describeError } from "./logging.js";
 
 /**
- * @typedef {object} ConditionPlugin  (ADR 0003)
- * @property {string} type
- * @property {(params: object) => import("../result.js").Result<void>} [validate]
- * @property {(params: object, ctx: PluginContext) => Promise<import("../precondition.js").ConditionResult>} evaluate
- */
-
-/**
- * @typedef {object} ActionPlugin  (ADR 0003)
- * @property {string} type
- * @property {(params: object) => import("../result.js").Result<void>} [validate]
- * @property {(params: object, ctx: PluginContext) => Promise<ActionResult>} execute
- */
-
-/**
- * @typedef {{ ok: true, delivery?: object } | { ok: false, error: { code: string, message: string } }} ActionResult
- */
-
-/**
- * @typedef {object} PluginContext
- * @property {string} decisionId
- * @property {string} taskId
- * @property {string} checkpointId
- * @property {Date} scheduledAt
- * @property {string} timeZone          the zone the decision was scheduled in
- * @property {object | null} participant
- * @property {import("./logging.js").Logger} logger
- * @property {AbortSignal} signal       aborted when the plugin times out
+ * @typedef {import("../contracts.js").ConditionPlugin} ConditionPlugin
+ * @typedef {import("../contracts.js").ActionPlugin} ActionPlugin
+ * @typedef {import("../contracts.js").ActionResult} ActionResult
+ * @typedef {import("../contracts.js").PluginContext} PluginContext
  */
 
 export const PLUGIN_TYPE_PATTERN = /^[a-z][a-z0-9-]{0,63}$/;

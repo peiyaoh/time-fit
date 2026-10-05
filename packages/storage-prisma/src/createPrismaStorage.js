@@ -3,6 +3,22 @@ const MAX_TASKS_LIMIT = 10_000;
 const CLAIMABLE_STATES = new Set(["claimed", "unavailable"]);
 
 /**
+ * @typedef {(...args: any[]) => Promise<any>} PrismaDelegateMethod
+ * @typedef {object} PrismaClientLike  the delegates a client generated from the shipped models provides
+ * @property {{ findMany: PrismaDelegateMethod }} participant
+ * @property {{ findMany: PrismaDelegateMethod }} task
+ * @property {{ create: PrismaDelegateMethod, findUnique: PrismaDelegateMethod, updateMany: PrismaDelegateMethod }} decision
+ * @property {{ create: PrismaDelegateMethod }} gap
+ */
+
+/**
+ * @typedef {object} PrismaStorage
+ * @property {import("@time-fit/core").ParticipantsPort} participants
+ * @property {import("@time-fit/core").TasksPort} tasks
+ * @property {import("@time-fit/core").DecisionLogPort & { recordGap: NonNullable<import("@time-fit/core").DecisionLogPort["recordGap"]> }} decisionLog
+ */
+
+/**
  * Creates @time-fit/core storage ports backed by an application-owned Prisma client.
  * The client is injected so importing this package never creates a connection or selects a
  * schema. The application is responsible for connecting and disconnecting its client.
@@ -10,8 +26,8 @@ const CLAIMABLE_STATES = new Set(["claimed", "unavailable"]);
  * `maxTasks` bounds how many candidate tasks one `listActive` call may return. More matching
  * rows make the call throw, so the tick aborts visibly instead of silently skipping tasks.
  *
- * @param {{ prisma: import("@prisma/client").PrismaClient, maxTasks?: number }} dependencies
- * @returns {{ participants: object, tasks: object, decisionLog: object }} immutable ports
+ * @param {{ prisma: PrismaClientLike, maxTasks?: number }} dependencies
+ * @returns {Readonly<PrismaStorage>} immutable ports
  */
 export function createPrismaStorage({ prisma, maxTasks = DEFAULT_MAX_TASKS } = {}) {
   assertPrismaClient(prisma);

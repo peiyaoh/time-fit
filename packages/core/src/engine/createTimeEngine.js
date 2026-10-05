@@ -5,17 +5,10 @@ import { runTick } from "./tick.js";
 const MILLISECONDS_PER_MINUTE = 60_000;
 
 /**
- * @typedef {object} TimeEngine
- * @property {(now?: Date) => Promise<Readonly<object>>} tick   primary entry point (ADR 0005 §4)
- * @property {() => void} start      convenience: tick at every minute boundary
- * @property {() => Promise<void>} stop  resolves after any in-flight tick finishes
- */
-
-/**
  * Creates an engine instance. Configuration is validated up front; an unusable config throws
  * `EngineConfigError` listing every problem. Nothing is global: two engines never share state.
- * @param {object} config  see ADR 0002 / docs for fields
- * @returns {Readonly<TimeEngine>}
+ * @param {import("../contracts.js").EngineConfig} config  see ADR 0002 / docs for fields
+ * @returns {Readonly<import("../contracts.js").TimeEngine>}
  */
 export function createTimeEngine(config) {
   const engine = resolveEngineConfig(config);
