@@ -136,3 +136,20 @@ describe("a failing decision keeps the tick in flight until siblings finish", ()
     expect(store.decisionLog.records().map(({ participantId, state }) => [participantId, state])).toEqual([["a", "completed"]]);
   });
 });
+
+describe("tasks port receives the evaluated window (ADR 0013)", () => {
+  test("listActive gets the tick instant and a detached windowFrom equal to the window start", async () => {
+    const calls = [];
+    const { decisionLog, participants } = createMemoryStore({ participants: [alice] });
+    const tasks = { listActive: async (at, options) => { calls.push({ at, options }); return []; } };
+    const engine = createTimeEngine({ participants, decisionLog, tasks, options: { catchUpWindowMinutes: 5 } });
+    const first = await engine.tick(NINE);
+    await engine.tick(new Date("2026-09-22T09:01:00.000Z"));
+    expect(calls[0].at).toEqual(NINE);
+    expect(calls[0].options.windowFrom).toEqual(new Date(first.window.from));
+    expect(calls[0].options.windowFrom).toEqual(new Date("2026-09-22T08:55:00.000Z"));
+    expect(calls[1].options.windowFrom).toEqual(NINE);
+    calls[0].options.windowFrom.setTime(0);
+    expect(first.window.from).toBe("2026-09-22T08:55:00.000Z");
+  });
+});

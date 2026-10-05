@@ -118,12 +118,62 @@ test("SQLite storage completes concurrent engine decisions", async () => {
   expect(decisions.every((decision) => decision.state === "completed")).toBe(true);
 });
 
+test("a task that ended inside the engine's window still runs its earlier occurrence", async () => {
+  await prisma.participant.create({ data: { id: "ada", timeZone: "UTC" } });
+  const expiring = { ...engineTask("expiring", 10), activeUntil: "2026-09-22T09:01:00.000Z" };
+  await prisma.task.create({ data: { id: "expiring", spec: expiring, activeUntil: new Date(expiring.activeUntil) } });
+  const engine = createTimeEngine({ storage: createPrismaStorage({ prisma }) });
+
+  const summary = await engine.tick(new Date("2026-09-22T09:02:00.000Z"));
+
+  expect(summary.counts).toMatchObject({ occurrence: 1, completed: 1 });
+  expect(await prisma.decision.count({ where: { state: "completed" } })).toBe(1);
+});
+
+test("listActive keeps tasks that end after windowFrom and drops older ones", async () => {
+  const at = new Date("2026-09-22T09:02:00.000Z");
+  await prisma.task.createMany({ data: [
+    { id: "inside-window", spec: { id: "inside-window" }, activeUntil: new Date("2026-09-22T09:01:00.000Z") },
+    { id: "before-window", spec: { id: "before-window" }, activeUntil: new Date("2026-09-22T08:56:00.000Z") },
+  ] });
+  const { tasks } = createPrismaStorage({ prisma });
+  expect(await tasks.listActive(at, { windowFrom: new Date("2026-09-22T08:57:00.000Z") })).toEqual([{ id: "inside-window" }]);
+  expect(await tasks.listActive(at)).toEqual([]);
+});
+
+test("more candidate tasks than maxTasks is an explicit error, not a truncated list", async () => {
+  const at = new Date("2026-09-22T09:00:00.000Z");
+  await prisma.task.createMany({ data: Array.from({ length: 3 }, (_unused, index) => ({ id: `task-${index}`, spec: { id: `task-${index}` } })) });
+  await expect(createPrismaStorage({ prisma, maxTasks: 2 }).tasks.listActive(at)).rejects.toMatchObject({ code: "task-capacity-exceeded" });
+  expect(await createPrismaStorage({ prisma, maxTasks: 3 }).tasks.listActive(at)).toHaveLength(3);
+});
+
+test("the default capacity of 500 aborts the tick at stage tasks when exceeded", async () => {
+  await prisma.task.createMany({ data: Array.from({ length: 501 }, (_unused, index) => ({ id: `task-${String(index).padStart(3, "0")}`, spec: engineTask(`task-${index}`, 1) })) });
+  const summary = await createTimeEngine({ storage: createPrismaStorage({ prisma }) }).tick(TICK_AT);
+  expect(summary).toMatchObject({ completed: false, failedStage: "tasks" });
+});
+
+test("old tasks that expired before the window do not count toward capacity", async () => {
+  const at = new Date("2026-09-22T09:02:00.000Z");
+  const hourAgo = new Date("2026-09-22T08:02:00.000Z");
+  await prisma.task.createMany({ data: [
+    ...Array.from({ length: 5 }, (_unused, index) => ({ id: `old-${index}`, spec: { id: `old-${index}` }, activeUntil: hourAgo })),
+    { id: "live", spec: { id: "live" } },
+  ] });
+  const { tasks } = createPrismaStorage({ prisma, maxTasks: 1 });
+  expect(await tasks.listActive(at, { windowFrom: new Date("2026-09-22T08:57:00.000Z") })).toEqual([{ id: "live" }]);
+});
+
 test("rejects malformed adapter input at the port boundary", async () => {
   expect(() => createPrismaStorage()).toThrow("prisma must provide");
   const storage = createPrismaStorage({ prisma });
   await expect(storage.participants.iterate({ cursor: "", limit: 1 })).rejects.toThrow("cursor");
   await expect(storage.participants.iterate({ cursor: null, limit: 0 })).rejects.toThrow("limit");
   await expect(storage.tasks.listActive(new Date("invalid"))).rejects.toThrow("valid Date");
+  await expect(storage.tasks.listActive(TICK_AT, { windowFrom: new Date("invalid") })).rejects.toThrow("windowFrom must be a valid Date");
+  await expect(storage.tasks.listActive(TICK_AT, { windowFrom: new Date("2026-09-22T09:00:01.000Z") })).rejects.toThrow("must not be after");
+  for (const maxTasks of [0, 1.5, 10_001, "500"]) expect(() => createPrismaStorage({ prisma, maxTasks })).toThrow("maxTasks");
   await expect(storage.decisionLog.claim({ ...sampleRecord("bad"), state: "completed" }, { token: "tick" })).rejects.toThrow("state");
   await expect(storage.decisionLog.claim(sampleRecord("bad"), { token: "" })).rejects.toThrow("token");
   await expect(storage.decisionLog.complete("", { finishedAt: "2026-09-22T09:00:01.000Z" })).rejects.toThrow("decisionId");

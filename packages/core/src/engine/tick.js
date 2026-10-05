@@ -79,7 +79,7 @@ async function reportMissedWindow(engine, logger, lastTick, window, tick) {
 }
 
 async function evaluateWindow(engine, tick, window, logger) {
-  const { tasks, outcomes: taskOutcomes } = await loadTasks(engine, tick, logger);
+  const { tasks, outcomes: taskOutcomes } = await loadTasks(engine, tick, window, logger);
   const tickContext = createTickContext(engine, tick, window, logger);
   const systemTasks = tasks.filter(({ spec }) => spec.scope === "system");
   const participantTasks = tasks.filter(({ spec }) => spec.scope === "participant");
@@ -100,9 +100,9 @@ function createTickContext(engine, tick, window, logger) {
   return Object.freeze({ engine, tick, window, logger, occurrenceMemo: new Map() });
 }
 
-async function loadTasks(engine, tick, logger) {
+async function loadTasks(engine, tick, window, logger) {
   if (engine.staticTasks !== null) return { tasks: sortByPriority(engine.staticTasks), outcomes: [] };
-  const specs = await listActiveTasks(engine, tick);
+  const specs = await listActiveTasks(engine, tick, window);
   const bounded = capTaskList(specs, engine.options.maxTasks, logger);
   const context = { conditionTypes: engine.conditionTypes, actionTypes: engine.actionTypes, hasPreferenceResolver: engine.preferenceResolver !== null };
   const { tasks, rejected } = validateTaskSet(bounded, context, { maxTasks: engine.options.maxTasks });
@@ -115,10 +115,12 @@ async function loadTasks(engine, tick, logger) {
   return { tasks: sortByPriority(runnable), outcomes: Array(rejectedCount).fill("taskRejected") };
 }
 
-async function listActiveTasks(engine, tick) {
+// windowFrom lets an adapter keep tasks that expired inside this window, whose earlier
+// occurrences are still due (ADR 0013).
+async function listActiveTasks(engine, tick, window) {
   let specs;
   try {
-    specs = await engine.tasksPort.listActive(new Date(tick.now));
+    specs = await engine.tasksPort.listActive(new Date(tick.now), { windowFrom: new Date(window.from) });
   } catch (error) {
     throw new TickAbort("tasks", error);
   }

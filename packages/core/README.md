@@ -60,10 +60,13 @@ or failure result. See [task-spec ADR](../../docs/adr/0006-task-spec.md) and
 ## Ports and plugins
 
 Supply `storage` with `participants.iterate({ cursor, limit })`, either static `tasks` or
-`tasks.listActive(at)`, and `decisionLog.claim/complete/fail` (optional `recordGap`). You may
-override any of those ports directly. Optional ports are `clock`, `random`, `logger`,
-`preferenceResolver`, and `snapshot`. The [ports ADR](../../docs/adr/0002-ports.md) defines
-the exact contract; `@time-fit/core/memory` is for tests, demos, and short-lived reminders—not
+`tasks.listActive(at, { windowFrom })`, and `decisionLog.claim/complete/fail` (optional
+`recordGap`). You may override any of those ports directly. Optional ports are `clock`, `random`,
+`logger`, `preferenceResolver`, and `snapshot`. A tasks port that filters by an end date should
+keep tasks whose `activeUntil` is after `windowFrom` (the start of the tick's evaluation window),
+not after `at`; otherwise an occurrence just before a task's end is skipped when the tick runs
+after it. The [ports ADR](../../docs/adr/0002-ports.md) and
+[ADR 0013](../../docs/adr/0013-pre-release-engine-contract-fixes.md) define the exact contract; `@time-fit/core/memory` is for tests, demos, and short-lived reminders—not
 research data.
 
 Register immutable plugin objects. A Condition has `type`, optional `validate(params)`, and

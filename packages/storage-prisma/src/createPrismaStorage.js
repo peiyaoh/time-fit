@@ -1,4 +1,5 @@
-const MAX_TASKS_PER_QUERY = 500;
+const DEFAULT_MAX_TASKS = 500;
+const MAX_TASKS_LIMIT = 10_000;
 const CLAIMABLE_STATES = new Set(["claimed", "unavailable"]);
 
 /**
@@ -6,14 +7,18 @@ const CLAIMABLE_STATES = new Set(["claimed", "unavailable"]);
  * The client is injected so importing this package never creates a connection or selects a
  * schema. The application is responsible for connecting and disconnecting its client.
  *
- * @param {{ prisma: import("@prisma/client").PrismaClient }} dependencies
+ * `maxTasks` bounds how many candidate tasks one `listActive` call may return. More matching
+ * rows make the call throw, so the tick aborts visibly instead of silently skipping tasks.
+ *
+ * @param {{ prisma: import("@prisma/client").PrismaClient, maxTasks?: number }} dependencies
  * @returns {{ participants: object, tasks: object, decisionLog: object }} immutable ports
  */
-export function createPrismaStorage({ prisma } = {}) {
+export function createPrismaStorage({ prisma, maxTasks = DEFAULT_MAX_TASKS } = {}) {
   assertPrismaClient(prisma);
+  assertMaxTasks(maxTasks);
   return Object.freeze({
     participants: createParticipantsPort(prisma),
-    tasks: createTasksPort(prisma),
+    tasks: createTasksPort(prisma, maxTasks),
     decisionLog: createDecisionLogPort(prisma),
   });
 }
@@ -36,23 +41,37 @@ function createParticipantsPort(prisma) {
   });
 }
 
-function createTasksPort(prisma) {
+function createTasksPort(prisma, maxTasks) {
   return Object.freeze({
-    async listActive(at) {
+    /**
+     * Tasks that started by `at` and had not ended by `windowFrom` (default: `at`). The engine
+     * passes the start of its evaluation window, so a task that ended inside the window still
+     * has its earlier occurrences evaluated (ADR 0013).
+     */
+    async listActive(at, { windowFrom = at } = {}) {
       assertDate("listActive: at", at);
+      assertDate("listActive: windowFrom", windowFrom);
+      if (windowFrom > at) throw new TypeError("listActive: windowFrom must not be after at");
       const rows = await prisma.task.findMany({
         where: {
           AND: [
             { OR: [{ activeFrom: null }, { activeFrom: { lte: at } }] },
-            { OR: [{ activeUntil: null }, { activeUntil: { gt: at } }] },
+            { OR: [{ activeUntil: null }, { activeUntil: { gt: windowFrom } }] },
           ],
         },
         orderBy: { id: "asc" },
-        take: MAX_TASKS_PER_QUERY,
+        take: maxTasks + 1,
       });
+      if (rows.length > maxTasks) throw taskCapacityExceeded(maxTasks);
       return Object.freeze(rows.map((row) => freezeCopy(row.spec)));
     },
   });
+}
+
+function taskCapacityExceeded(maxTasks) {
+  const error = new Error(`listActive: more than ${maxTasks} candidate tasks; raise createPrismaStorage's maxTasks or retire old tasks`);
+  error.code = "task-capacity-exceeded";
+  return error;
 }
 
 function createDecisionLogPort(prisma) {
@@ -144,6 +163,12 @@ function isPrismaDelegate(prisma, name) {
     gap: ["create"],
   });
   return requiredMethods[name].every((method) => typeof prisma[name]?.[method] === "function");
+}
+
+function assertMaxTasks(maxTasks) {
+  if (!Number.isInteger(maxTasks) || maxTasks < 1 || maxTasks > MAX_TASKS_LIMIT) {
+    throw new TypeError(`createPrismaStorage: maxTasks must be an integer from 1 to ${MAX_TASKS_LIMIT}`);
+  }
 }
 
 function assertPageRequest(cursor, limit) {

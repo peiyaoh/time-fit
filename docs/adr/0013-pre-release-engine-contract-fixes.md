@@ -1,7 +1,8 @@
 # ADR 0013: Pre-release engine contract fixes
 
-**Status:** Accepted (2026-10-05). **Supersedes:** the clause of ADR 0002 that says the
-engine passes `tickId` as the claim token. The rest of ADR 0002 stands.
+**Status:** Accepted (2026-10-05). **Supersedes:** in ADR 0002, the clause that says the
+engine passes `tickId` as the claim token, and the `listActive(at)` signature. The rest of
+ADR 0002 stands.
 
 ## Context
 A pre-release review of PR #30 found places where the engine's port and lifecycle rules let a
@@ -40,6 +41,26 @@ design and are not awaited.
 *Why:* the tick used to reject while sibling actions were still running. `stop()` then
 resolved, so a host could close its storage client under a running action, and the next tick
 could exceed `options.concurrency`.
+
+### 3. The tasks port receives the evaluation window
+The tasks port signature becomes `listActive(at: Date, { windowFrom: Date }) → Promise<TaskSpec[]>`.
+The engine passes a detached `windowFrom` equal to the start of the tick's evaluation window
+(ADR 0005: `max(lastTick, now − catchUpWindow)`).
+- An adapter that filters by end date should return tasks with `activeUntil > windowFrom`,
+  and still `activeFrom ≤ at`. Every occurrence in the window is later than `windowFrom`, so this
+  never drops a due occurrence. Core still applies the exact per-occurrence `activeFrom` /
+  `activeUntil` check (ADR 0001).
+- The argument is additive. An adapter that ignores it keeps working, but if it filters
+  `activeUntil > at`, it keeps the old gap until it adopts `windowFrom`.
+- `@time-fit/storage-prisma` uses it. Its `maxTasks` option (default 500, at most 10,000) bounds
+  the candidate tasks one call may return. More matching rows make the call throw
+  `task-capacity-exceeded`, so the tick aborts at stage `tasks` instead of silently dropping
+  tasks. That candidate cap is configured separately from the engine's `options.maxTasks`.
+
+*Why:* the Prisma adapter filtered `activeUntil > now`. A task ending at 09:01 with an
+occurrence at 09:00 was never evaluated by a tick at 09:02, although the memory store evaluated
+it. A fixed lookback (the 24-hour maximum catch-up window) would also work, but it would count
+long-expired tasks against the adapter's capacity.
 
 ## Consequences
 - Adapter authors: nothing changes if the adapter already compares tokens as ADR 0002 says.
