@@ -475,10 +475,14 @@ describe("start / stop", () => {
     const slow = { type: "record", execute: async () => { await gate; return { ok: true }; } };
     const { engine, store } = engineWith({ actions: [slow] });
     const pending = engine.tick(NINE);
-    const stopped = engine.stop();
+    let stopSettled = false;
+    const stopped = engine.stop().then(() => { stopSettled = true; });
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(stopSettled).toBe(false);
     release();
-    await Promise.all([pending, stopped]);
+    await stopped;
     expect(store.decisionLog.records()[0].state).toBe("completed");
+    await pending;
   });
 });
 

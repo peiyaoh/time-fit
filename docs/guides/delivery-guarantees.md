@@ -4,8 +4,10 @@ TimeFit provides **at-most-once action execution per `decisionId`**, not at-leas
 It does not retry actions automatically. The engine creates an atomic, unique decision-log claim
 before invoking an action; a second tick, concurrent serverless invocation, or another process
 that sees an existing claim skips execution. The log adapter must make that claim unique by
-`decisionId`. [ADR 0004](../adr/0004-decision-record-identity-delivery.md) and
-[ADR 0002](../adr/0002-ports.md) define this contract.
+`decisionId`. Each claim call carries its own token, so a participant listed twice in one tick
+is also executed once. [ADR 0004](../adr/0004-decision-record-identity-delivery.md),
+[ADR 0002](../adr/0002-ports.md) and [ADR 0013](../adr/0013-pre-release-engine-contract-fixes.md)
+define this contract.
 
 If a process dies after claiming but before terminal completion, the record remains `claimed`
 without `finishedAt`. This means delivery is unknown; TimeFit will not silently send again.
@@ -20,7 +22,9 @@ no durable scheduler watermark, so the window is re-covered and the unique claim
 duplicate decision. These are scheduling facts, not evidence of delivery. See
 [ADR 0005](../adr/0005-calendar-and-scheduling.md).
 
-In one process, a tick overlapping an active tick returns `{ skipped: "in-flight" }`. Across
+In one process, a tick overlapping an active tick returns `{ skipped: "in-flight" }`. A tick
+that fails stays in flight until every decision it already started has settled, so `await
+engine.stop()` is safe to follow with closing your storage client. Across
 processes there is no lease or distributed scheduler: unique claim is duplicate protection.
 
 Plugins receive a timeout and abort signal. A timeout produces a failed decision with

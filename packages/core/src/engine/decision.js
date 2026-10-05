@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { evaluateEligibility } from "../eligibility.js";
 import { computeDecisionId, decisionSubject } from "../identity.js";
 import { evaluatePrecondition } from "../precondition.js";
@@ -131,9 +132,11 @@ async function claimAndExecute(context, record) {
   return ["claimed", ...(await finalize(context, result))];
 }
 
-async function tryClaim({ engine, tick, identity, logger }, record) {
+// One token per logical claim (ADR 0013): an adapter's internal retry of this call reuses it,
+// while a second evaluation of the same decision in the same tick gets a different one.
+async function tryClaim({ engine, identity, logger }, record) {
   try {
-    const { claimed } = await engine.decisionLog.claim(Object.freeze(record), { token: tick.tickId });
+    const { claimed } = await engine.decisionLog.claim(Object.freeze(record), { token: randomUUID() });
     if (!claimed) logger.debug("decision-already-claimed", {});
     return claimed === true ? "claimed" : "skipped";
   } catch (error) {
