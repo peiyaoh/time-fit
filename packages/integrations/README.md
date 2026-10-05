@@ -11,6 +11,13 @@ import { desktopNotificationAction } from "@time-fit/integrations/desktop";
 const action = desktopNotificationAction({ notifier, title: "TimeFit" });
 ```
 
+`notifier.notify(options, callback)` may return a promise, which the action awaits. Any other
+return value is treated as a handle (node-notifier returns the notifier itself), and the action
+completes when the callback is called. A callback error fails the decision. The action passes
+`wait: true`, so node-notifier calls back after the user acts or after about 5 seconds, well
+within the engine's default 30-second plugin timeout. A notifier that neither returns a promise
+nor calls back ends as `plugin-timeout`.
+
 The application constructs vendor clients and passes them to `twilioSmsAction` or
 `mailjetEmailAction`. This package does not import vendor SDKs, read environment variables, or
 own credentials. Mailjet receives `ctx.decisionId` as `CustomID`; Twilio's Messages API has no

@@ -18,13 +18,38 @@ test("desktop action supports promise notifiers and contains provider errors", a
   const success = desktopNotificationAction({ notifier: { notify: async () => "sent" } });
   const failure = desktopNotificationAction({ notifier: { notify: () => { throw new Error("notifier down"); } } });
   expect(await success.execute({ message: "Hello" }, {})).toMatchObject({ ok: true, delivery: { response: "sent" } });
+  const silent = desktopNotificationAction({ notifier: { notify: async () => undefined } });
+  expect(await silent.execute({ message: "Hello" }, {})).toMatchObject({ ok: true, delivery: { response: null, decisionId: null } });
   expect(await failure.execute({ message: "Hello" }, {})).toEqual({ ok: false, error: { code: "desktop-send-failed", message: "notifier down" } });
 });
 
-test("desktop action supports immediate and callback-error notifier APIs", async () => {
-  const immediate = desktopNotificationAction({ notifier: { notify: () => null } });
+/** A node-notifier-style notifier: notify() returns itself and calls back later. */
+function laterCallbackNotifier() {
+  const pending = [];
+  const notifier = { notify(options, callback) { pending.push(callback); return this; } };
+  return { notifier, callBack: (...args) => pending.shift()(...args) };
+}
+
+test("desktop action waits for a later callback when notify returns a handle", async () => {
+  const { notifier, callBack } = laterCallbackNotifier();
+  const action = desktopNotificationAction({ notifier });
+  let settled = false;
+  const result = action.execute({ message: "Hello" }, { decisionId: "d1" }).finally(() => { settled = true; });
+  await new Promise((resolve) => setImmediate(resolve));
+  expect(settled).toBe(false);
+  callBack(undefined, "timeout", { activationType: "timeout" });
+  expect(await result).toEqual({ ok: true, delivery: { provider: "desktop", response: { response: "timeout", metadata: { activationType: "timeout" } }, decisionId: "d1" } });
+});
+
+test("desktop action reports a later callback error even though notify returned a handle", async () => {
+  const { notifier, callBack } = laterCallbackNotifier();
+  const result = desktopNotificationAction({ notifier }).execute({ message: "Hello" }, {});
+  callBack(new Error("notification center unavailable"));
+  expect(await result).toEqual({ ok: false, error: { code: "desktop-send-failed", message: "notification center unavailable" } });
+});
+
+test("desktop action reports an immediate callback error", async () => {
   const callbackFailure = desktopNotificationAction({ notifier: { notify: (options, callback) => callback(new Error("dismissed")) } });
-  expect(await immediate.execute({ message: "Hello" }, {})).toMatchObject({ ok: true, delivery: { response: null, decisionId: null } });
   expect(await callbackFailure.execute({ message: "Hello" }, {})).toEqual({ ok: false, error: { code: "desktop-send-failed", message: "dismissed" } });
 });
 

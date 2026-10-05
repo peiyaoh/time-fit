@@ -37,7 +37,8 @@ function notifyDesktop(notifier, options) {
     const rejectOnce = settle(reject);
     const callback = (error, response, metadata) => error === null || error === undefined ? resolveOnce({ response, metadata }) : rejectOnce(error);
     const result = notifier.notify(options, callback);
-    if (result?.then !== undefined) result.then(resolveOnce, rejectOnce);
-    else if (result !== undefined) resolveOnce(result);
+    // A returned promise is the completion signal. Any other return value is only a handle
+    // (node-notifier returns the notifier itself), so completion comes from the callback.
+    if (typeof result?.then === "function") result.then(resolveOnce, rejectOnce);
   });
 }
