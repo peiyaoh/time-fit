@@ -392,6 +392,16 @@ describe("plugins", () => {
     circular.self = circular;
     expect(capPayload(circular)).toEqual({ unserializable: true });
     expect(capPayload(undefined)).toBeUndefined();
+    expect(capPayload(() => "f")).toBeUndefined();
+    expect(capPayload(Symbol("s"))).toBeUndefined();
+    expect(capPayload({ toJSON: () => undefined })).toBeUndefined();
+    expect(capPayload(10n)).toEqual({ unserializable: true });
+    expect(capPayload({ text: "x".repeat(9000) })).toEqual({ truncated: true, sizeBytes: 9011 });
+    const original = { list: [1, { deep: true }] };
+    const capped = capPayload(original);
+    expect(capped).toEqual(original);
+    expect(capped).not.toBe(original);
+    expect(capped.list[1]).not.toBe(original.list[1]);
     expect(await invokeIsolated(() => { throw "plain"; }, 50)).toEqual({ ok: false, error: { code: "plugin-threw", message: "plain" } });
   });
 });

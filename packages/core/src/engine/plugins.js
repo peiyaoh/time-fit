@@ -77,7 +77,8 @@ export function normalizeActionResult(result) {
 /**
  * Keeps plugin-supplied evidence/delivery bounded in decision records (ADR 0003).
  * @param {unknown} payload
- * @returns {unknown} the payload, or a marker when it is too large or not serializable
+ * @returns {unknown} a detached JSON copy of the payload (exactly what was size-checked), or a
+ *   marker when it is too large or not serializable
  */
 export function capPayload(payload) {
   let serialized;
@@ -87,6 +88,8 @@ export function capPayload(payload) {
     // Circular or BigInt payloads cannot be stored; record that fact instead of the value.
     return { unserializable: true };
   }
-  const sizeBytes = Buffer.byteLength(serialized ?? "", "utf8");
-  return sizeBytes > MAX_PAYLOAD_BYTES ? { truncated: true, sizeBytes } : payload;
+  // undefined, functions, symbols, and toJSON() returning undefined have no JSON form.
+  if (serialized === undefined) return undefined;
+  const sizeBytes = Buffer.byteLength(serialized, "utf8");
+  return sizeBytes > MAX_PAYLOAD_BYTES ? { truncated: true, sizeBytes } : JSON.parse(serialized);
 }

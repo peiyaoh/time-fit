@@ -62,6 +62,26 @@ occurrence at 09:00 was never evaluated by a tick at 09:02, although the memory 
 it. A fixed lookback (the 24-hour maximum catch-up window) would also work, but it would count
 long-expired tasks against the adapter's capacity.
 
+### 4. A non-terminal participant page must contain at least one participant
+`participants.iterate` may return an empty page only as the last page (`nextCursor: null`). An
+empty page with a non-null `nextCursor` aborts the tick at stage `participants`.
+
+*Why:* an empty page does not count toward `maxParticipants`, so an adapter returning empty
+non-terminal pages made the engine page without bound. With this rule, every accepted page adds
+at least one participant, so paging stops at `maxParticipants`, and no cursor bookkeeping is
+needed. The supplied adapters already behave this way.
+
+### 5. Plugin payloads are stored as their JSON form
+`evidence`, `delivery` and `snapshot` values are stored as a detached copy of their JSON
+serialization: `JSON.parse(JSON.stringify(value))`, the same text that the 8 KB cap of ADR 0003
+measures. Functions and symbols are dropped, `Date`s become ISO strings, and the stored value
+shares no references with the plugin's object. A value with no JSON form is stored as absent.
+The `truncated` and `unserializable` markers are unchanged.
+
+*Why:* the cap measured the JSON form but stored the original object. A delivery containing a
+function passed the cap, then failed the store's structured clone, and left a completed send
+recorded as `claimed`.
+
 ## Consequences
 - Adapter authors: nothing changes if the adapter already compares tokens as ADR 0002 says.
 - The conformance suite's same-token and different-token claim checks stay as they are.

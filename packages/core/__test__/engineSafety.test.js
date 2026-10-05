@@ -153,3 +153,34 @@ describe("tasks port receives the evaluated window (ADR 0013)", () => {
     expect(first.window.from).toBe("2026-09-22T08:55:00.000Z");
   });
 });
+
+describe("participant pages must make progress (ADR 0013)", () => {
+  test("an empty page with a non-null cursor aborts the tick on the first such response", async () => {
+    let requests = 0;
+    const participants = { iterate: async () => { requests += 1; return { items: [], nextCursor: "same" }; } };
+    const stalled = createTimeEngine({ storage: createMemoryStore({ tasks: [participantTask()] }), participants, actions: [recordingAction()] });
+    const summary = await stalled.tick(NINE);
+    expect(requests).toBe(1);
+    expect(summary).toMatchObject({ completed: false, failedStage: "participants" });
+  });
+
+  test("an empty terminal page is a normal end of iteration", async () => {
+    const participants = { iterate: async () => ({ items: [], nextCursor: null }) };
+    const engine = createTimeEngine({ storage: createMemoryStore({ tasks: [participantTask()] }), participants, actions: [recordingAction()] });
+    expect(await engine.tick(NINE)).toMatchObject({ completed: true });
+  });
+});
+
+describe("stored payloads are detached JSON (ADR 0013)", () => {
+  test("a delivery with a function and a Date is stored as JSON and the decision completes", async () => {
+    const delivery = { id: "m1", at: new Date("2026-09-22T09:00:00.000Z"), format: () => "not JSON", nested: { n: 1 } };
+    const action = { type: "record", execute: async () => ({ ok: true, delivery }) };
+    const { engine, store } = engineWith({ actions: [action] });
+    const { counts } = await engine.tick(NINE);
+    delivery.nested.n = 2;
+    const [record] = store.decisionLog.records();
+    expect(counts).toMatchObject({ completed: 1, finalizeFailed: 0 });
+    expect(record.state).toBe("completed");
+    expect(record.result.delivery).toEqual({ id: "m1", at: "2026-09-22T09:00:00.000Z", nested: { n: 1 } });
+  });
+});

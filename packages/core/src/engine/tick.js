@@ -176,6 +176,10 @@ async function fetchParticipantPage(engine, cursor, limit) {
   if (!Array.isArray(page?.items) || !validCursor || page.items.length > limit) {
     throw new TickAbort("participants", new TypeError("participants.iterate must resolve to { items (<= limit), nextCursor }"));
   }
+  // A non-terminal page must make progress, or paging would never reach maxParticipants (ADR 0013).
+  if (page.items.length === 0 && page.nextCursor !== null) {
+    throw new TickAbort("participants", new TypeError("participants.iterate returned an empty page with a non-null nextCursor"));
+  }
   return page;
 }
 
