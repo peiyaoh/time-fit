@@ -1,3 +1,4 @@
+import { boundError } from "./boundedError.js";
 import { validatePluginParams } from "./pluginParams.js";
 import { err, ok } from "./result.js";
 
@@ -139,7 +140,7 @@ function conditionRecord(type, path, result) {
     return Object.freeze({ path, type, ok: true, met: result.met, ...evidence });
   }
   if (result?.ok === false && typeof result.error?.code === "string") {
-    return Object.freeze({ path, type, ok: false, error: result.error });
+    return Object.freeze({ path, type, ok: false, error: Object.freeze(boundError({ code: result.error.code, message: result.error.message })) });
   }
   return Object.freeze({
     path,

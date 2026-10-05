@@ -19,7 +19,7 @@ export function twilioSmsAction({ client, from, phonePath = "phone" } = {}) {
         const message = await client.messages.create({ to: destination.value, from: sender, body: params.body });
         return Object.freeze({ ok: true, delivery: Object.freeze({ provider: "twilio", messageSid: message?.sid ?? null, status: message?.status ?? null, decisionId: ctx.decisionId ?? null }) });
       } catch (error) {
-        return providerFailure("twilio", error);
+        return providerFailure("twilio", error, destination.value);
       }
     },
   });

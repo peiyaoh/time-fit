@@ -26,4 +26,9 @@ does not claim provider-level duplicate suppression. A pre-aborted `ctx.signal` 
 request; these SDK method shapes do not expose an abort signal for an in-flight request.
 
 Each factory returns a frozen core Action. Missing participant destinations return a typed
-ActionResult error rather than throwing; provider exceptions become `{ ok: false, error }`.
+ActionResult error rather than throwing; provider exceptions become `{ ok: false, error }` with
+code `twilio-send-failed` or `mailjet-send-failed` and the provider's message. That message is
+stored in the decision record, so exact copies of the recipient's phone number or email address
+in it are replaced with `[recipient]`. This is exact matching only: a copy that differs in case
+or formatting, and any other provider text, is kept as received. The engine bounds the stored
+message to 1,024 characters.

@@ -124,3 +124,17 @@ test("desktop subpath resolves without optional vendor SDKs", async () => {
   const module = await import("@time-fit/integrations/desktop");
   expect(module.desktopNotificationAction).toBe(desktopNotificationAction);
 });
+
+test("provider errors replace every exact occurrence of the recipient", async () => {
+  const twilio = twilioSmsAction({ client: { messages: { create: async ({ to }) => { throw new Error(`Invalid 'To' Phone Number: ${to} (to=${to})`); } } }, from: "+15550001" });
+  expect(await twilio.execute({ body: "hi" }, { participant: { phone: "+15550002" } })).toEqual({ ok: false, error: { code: "twilio-send-failed", message: "Invalid 'To' Phone Number: [recipient] (to=[recipient])" } });
+  const mailjetClient = { post: () => ({ request: async (payload) => { throw new Error(`"${payload.Messages[0].To[0].Email}" is an invalid email address.`); } }) };
+  const mailjet = mailjetEmailAction({ client: mailjetClient, from: { email: "study@example.test", name: "Study" } });
+  expect(await mailjet.execute({ subject: "hi", text: "body" }, { participant: { email: "ada@example.test" } })).toEqual({ ok: false, error: { code: "mailjet-send-failed", message: '"[recipient]" is an invalid email address.' } });
+});
+
+test("recipient redaction is exact-match only, as documented", async () => {
+  const mailjetClient = { post: () => ({ request: async () => { throw new Error("ADA@EXAMPLE.TEST bounced"); } }) };
+  const mailjet = mailjetEmailAction({ client: mailjetClient, from: { email: "study@example.test", name: "Study" } });
+  expect(await mailjet.execute({ subject: "hi", text: "body" }, { participant: { email: "ada@example.test" } })).toMatchObject({ error: { message: "ADA@EXAMPLE.TEST bounced" } });
+});

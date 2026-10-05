@@ -1,3 +1,4 @@
+import { boundError } from "../boundedError.js";
 import { describeError } from "./logging.js";
 
 /**
@@ -69,7 +70,7 @@ export function normalizeActionResult(result) {
     return result.delivery === undefined ? { ok: true } : { ok: true, delivery: capPayload(result.delivery) };
   }
   if (result?.ok === false && typeof result.error?.code === "string") {
-    return { ok: false, error: { code: result.error.code, message: String(result.error.message ?? "") } };
+    return { ok: false, error: boundError({ code: result.error.code, message: result.error.message }) };
   }
   return { ok: false, error: { code: "invalid-action-result", message: "action returned a malformed ActionResult" } };
 }

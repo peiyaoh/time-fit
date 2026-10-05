@@ -21,7 +21,7 @@ export function mailjetEmailAction({ client, from, emailPath = "email" } = {}) {
         const result = await request.request({ Messages: [buildMailjetMessage(sender, destination.value, params, ctx.decisionId)] });
         return Object.freeze({ ok: true, delivery: Object.freeze({ provider: "mailjet", messageId: result?.body?.Messages?.[0]?.To?.[0]?.MessageID ?? null, decisionId: ctx.decisionId ?? null }) });
       } catch (error) {
-        return providerFailure("mailjet", error);
+        return providerFailure("mailjet", error, destination.value);
       }
     },
   });

@@ -82,6 +82,23 @@ The `truncated` and `unserializable` markers are unchanged.
 function passed the cap, then failed the store's structured clone, and left a completed send
 recorded as `claimed`.
 
+### 6. Persisted error fields are bounded
+Before an error is stored in a decision record or written to an engine log event, the engine bounds
+its `code` to 128, its `message` to 1,024, and its `stack` (where one is kept) to 4,096 UTF-16 code
+units. The bounds include a trailing `…` marker, and a cut never splits a surrogate pair. This
+applies to action errors (returned or thrown), condition errors, and `snapshotFailed`. A
+condition error keeps only `code` and `message`, as its result type declares. A `snapshotFailed`
+marker drops its stack if needed to stay within the 8 KB snapshot cap of ADR 0003. These bounds
+apply per field; ADR 0003's caps were never a bound on a whole record.
+
+The supplied Twilio and Mailjet actions replace exact copies of the recipient in provider error
+messages with `[recipient]` before the engine bounds them. Matching is exact; this is not
+de-identification. Replacing provider text with a generic message is an owner option that is
+not taken here, because the provider's reason is what users need to diagnose failed sends.
+
+*Why:* only `evidence`, `delivery` and `snapshot` were capped. A 200,000-character provider
+message produced a 200 KB record, and a throwing snapshot stored an unbounded stack.
+
 ## Consequences
 - Adapter authors: nothing changes if the adapter already compares tokens as ADR 0002 says.
 - The conformance suite's same-token and different-token claim checks stay as they are.

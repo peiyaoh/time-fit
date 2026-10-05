@@ -55,8 +55,19 @@ export function assertSafePath(path, name, actionName) {
   return path;
 }
 
-export function providerFailure(provider, error) {
-  const message = error instanceof Error ? error.message : String(error);
+export const REDACTED_RECIPIENT = "[recipient]";
+
+/**
+ * Converts a provider exception into an ActionResult error. Exact occurrences of the recipient
+ * are replaced, because provider messages often echo it and the message is stored in the
+ * decision record. Case-changed or reformatted copies are not detected.
+ * @param {string} provider
+ * @param {unknown} error
+ * @param {string} [recipient]  the destination the request was sent to
+ */
+export function providerFailure(provider, error, recipient) {
+  const rawMessage = error instanceof Error ? error.message : String(error);
+  const message = typeof recipient === "string" && recipient !== "" ? rawMessage.split(recipient).join(REDACTED_RECIPIENT) : rawMessage;
   return Object.freeze({ ok: false, error: Object.freeze({ code: `${provider}-send-failed`, message }) });
 }
 

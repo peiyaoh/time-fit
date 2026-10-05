@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
+import { boundError } from "../boundedError.js";
 import { evaluateEligibility } from "../eligibility.js";
 import { computeDecisionId, decisionSubject } from "../identity.js";
 import { evaluatePrecondition } from "../precondition.js";
 import { randomize } from "../randomization.js";
 import { bindLogger, describeError } from "./logging.js";
-import { capPayload, invokeIsolated, normalizeActionResult } from "./plugins.js";
+import { MAX_PAYLOAD_BYTES, capPayload, invokeIsolated, normalizeActionResult } from "./plugins.js";
 
 export const DECISION_RECORD_SCHEMA = "time-fit.decision/v1";
 
@@ -103,8 +104,19 @@ function takeSnapshot(engine, participant) {
   try {
     return capPayload(engine.snapshot(participant));
   } catch (error) {
-    return { snapshotFailed: describeError(error, "snapshot-threw") };
+    return snapshotFailure(boundError(describeError(error, "snapshot-threw")));
   }
+}
+
+// The failure marker obeys the same serialized-size cap as a snapshot (ADR 0003). Without its
+// stack, a bounded error always fits, so the stack is the part given up when needed.
+function snapshotFailure({ stack, ...withoutStack }) {
+  const withStack = { snapshotFailed: stack === undefined ? withoutStack : { ...withoutStack, stack } };
+  return serializedBytes(withStack) <= MAX_PAYLOAD_BYTES ? withStack : { snapshotFailed: withoutStack };
+}
+
+function serializedBytes(value) {
+  return Buffer.byteLength(JSON.stringify(value), "utf8");
 }
 
 async function recordUnavailable(context, record) {
