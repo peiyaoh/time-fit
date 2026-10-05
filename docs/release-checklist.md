@@ -46,8 +46,21 @@ From here on, Changesets compares against `main` (`.changeset/config.json` `base
       `packages/integrations/package.json`, change `"private": true` to `"private": false`
       (or remove the field). This is the owner release decision that sections 2–4 deliberately
       did not make.
-- [ ] Peer ranges `@time-fit/core: ">=0.0.0 <1"` in storage-prisma and integrations still match
-      `0.1.0`; optionally tighten them to `^0.1.0`.
+- [ ] **Required:** set the `@time-fit/core` peer range in storage-prisma and integrations to the
+      tested range, normally `^0.1.0` (that is, `>=0.1.0 <0.2.0`). The current `>=0.0.0 <1` would
+      also accept a future, breaking `0.2.0`. Widen the range later only when a new core minor is
+      tested with these packages; package versions do not need to move in lockstep.
+- [ ] **Decide the API stability policy** for the 0.x releases and state it in
+      `packages/core/README.md` ("Kernel API"). For example: breaking changes only in minor
+      versions, with a changelog entry. This covers the engine and the exported kernel functions.
+- [ ] **Decide how provider errors are stored.** The Twilio and Mailjet actions keep the
+      provider's error message and replace exact copies of the recipient with `[recipient]`
+      ([ADR 0013](adr/0013-pre-release-engine-contract-fixes.md) §6). Keep this, or change the
+      actions to store only a generic message and the error code if the study's data policy
+      requires that no provider text be stored.
+- [ ] **PostgreSQL:** it is documented as "schema validated only". Keep that label, or add a CI job
+      that runs the conformance suites against PostgreSQL with a PostgreSQL-generated client before
+      removing it.
 - [ ] Add `"/CHANGELOG.md"` to each package's `files` list so the changelogs written by
       `yarn version-packages` ship in the tarball. npm does not include `CHANGELOG.md`
       automatically when `files` is set.

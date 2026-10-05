@@ -89,4 +89,27 @@ keep `pageSize` at least four times concurrency to avoid underfilled page waves.
 
 Read [delivery guarantees](../../docs/guides/delivery-guarantees.md) and
 [privacy guidance](../../docs/guides/privacy.md) before a study deployment. Generated `.d.ts`
-files in each package tarball are the API reference.
+files in each package tarball are the API reference. The root export also provides the public
+contract types, such as `EngineConfig`, `TickResult`, `DecisionRecord`, the port types, and
+`ActionPlugin<Params>`.
+
+## Kernel API
+
+`createTimeEngine` is built on pure functions that are also exported, for applications that
+validate stored specs, analyze decision records, or test scheduling without running an engine.
+None of them do I/O. Their contracts are defined by the ADRs listed here.
+
+| Exports | Use | Contract |
+|---|---|---|
+| `validateTaskSpec(spec, context)`, `validateTaskSet(specs, context, { maxTasks })` | Validate a task spec before storing it. `context` is `{ conditionTypes, actionTypes, hasPreferenceResolver }`, where the two registries are `Map`s from plugin `type` to the plugin (only its optional `validate` is called). Returns `Result` with a frozen, normalized spec. | [ADR 0006](../../docs/adr/0006-task-spec.md) |
+| `validateEligibility(eligibility)`, `validateOutcomes(outcomes, context)`, `validatePrecondition(node, context)` | Validate one section of a task spec. The last two take the same `context` as `validateTaskSpec`. | ADR 0001, 0006 |
+| `evaluateEligibility({ task, participant, scheduledAt })`, `evaluatePrecondition(node, evaluateCondition)`, `readOwnPath(source, dottedPath)` | Evaluate eligibility and a precondition tree. `evaluateCondition(condition, path)` returns a promise of a condition result. `readOwnPath` reads own properties only. | [ADR 0001](../../docs/adr/0001-participants-eligibility-availability.md), [ADR 0008](../../docs/adr/0008-stage-c1-clarifications.md) |
+| `normalizeCheckpoint`, `checkpointKind`, `localDatesForWindow`, `occurrences` | Normalize checkpoints and list their occurrences in a time window and zone. | [ADR 0005](../../docs/adr/0005-calendar-and-scheduling.md) |
+| `computeDecisionId`, `decisionSubject`, `computeTaskVersion`, `DECISION_ID_VERSION`, `canonicalJson` | Recompute decision ids and task versions, for example to join records with schedules in analysis. | [ADR 0004](../../docs/adr/0004-decision-record-identity-delivery.md), ADR 0008 |
+| `randomize`, `selectArm`, `deriveSeed`, `seededRandom` | Reproduce or audit an arm assignment from a decision id. | ADR 0004 §3 |
+| `isValidTimeZone`, `ok`, `err` | IANA zone check and the `Result` helpers that every validator returns. | [ADR index](../../docs/adr/README.md) |
+| `EngineConfigError`, `DECISION_RECORD_SCHEMA`, `timeWindowCondition` | The configuration error type, the record schema id, and the built-in `time-window` condition. | ADR 0002-0004, 0006 |
+
+These are public API and follow semantic versioning like the engine. The stability policy for the
+first releases is an owner decision recorded in the
+[release checklist](../../docs/release-checklist.md).
