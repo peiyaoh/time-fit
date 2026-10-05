@@ -20,3 +20,10 @@ core task spec; mirror its `activeFrom` and `activeUntil` fields in the scalar c
 `Decision.decisionId` is the unique atomic claim key. A same-token re-claim succeeds; a
 different token is refused; terminal transitions update only a claimed record. This gives core's
 at-most-once delivery semantics, not delivery retry semantics.
+
+## Databases
+
+| Database | Schema fragment | Status |
+|---|---|---|
+| SQLite | `prisma/schema.sqlite.prisma` | Schema validated; the adapter and decision-log conformance suites run against it in CI. |
+| PostgreSQL | `prisma/schema.postgres.prisma` | Schema validated only. The conformance suites run on SQLite only, so run `decisionLogConformanceChecks` from `@time-fit/core/testing` against your own PostgreSQL database before relying on it. |

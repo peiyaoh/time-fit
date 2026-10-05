@@ -1,7 +1,13 @@
 // Merge these models into an application's SQLite Prisma schema, then generate the
 // application's client. @time-fit/storage-prisma never generates or owns that client.
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "sqlite"; url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
 
 model Participant {
   id         String @id

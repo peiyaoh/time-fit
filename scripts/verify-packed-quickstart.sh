@@ -102,6 +102,11 @@ cp "$repo_root/examples/prisma/index.mjs" "$repo_root/examples/prisma/package.js
 cp -R "$repo_root/examples/prisma/prisma" "$prisma_dir/prisma"
 cd "$prisma_dir"
 npm install --silent --no-audit --no-fund "../$core_tarball" "../$storage_tarball" prisma@6.10.0 @prisma/client@6.10.0
+# Validate the fragments as shipped, then run the example against the shipped models.
+shipped_schemas="node_modules/@time-fit/storage-prisma/prisma"
+DATABASE_URL="file:./validate-only.db" npx prisma validate --schema "$shipped_schemas/schema.sqlite.prisma" >/dev/null
+DATABASE_URL="postgresql://validate:only@localhost:5432/validate" npx prisma validate --schema "$shipped_schemas/schema.postgres.prisma" >/dev/null
+node "$repo_root/packages/storage-prisma/scripts/compose-schema.mjs" prisma/schema.prisma "$shipped_schemas/schema.sqlite.prisma" prisma/schema.prisma
 npx prisma generate --schema prisma/schema.prisma >/dev/null
 npx prisma db push --skip-generate --schema prisma/schema.prisma >/dev/null
 prisma_output="$(node index.mjs)"

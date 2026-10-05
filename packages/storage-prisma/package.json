@@ -31,9 +31,10 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "yarn prisma:generate:test && cross-env NODE_OPTIONS=--experimental-vm-modules jest",
-    "test:coverage": "yarn prisma:generate:test && cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
-    "prisma:generate:test": "prisma generate --schema __test__/schema.prisma",
+    "test": "yarn validate:schemas && yarn prisma:generate:test && cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:coverage": "yarn validate:schemas && yarn prisma:generate:test && cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "validate:schemas": "cross-env DATABASE_URL=file:./validate-only.db prisma validate --schema prisma/schema.sqlite.prisma && cross-env DATABASE_URL=postgresql://validate:only@localhost:5432/validate prisma validate --schema prisma/schema.postgres.prisma",
+    "prisma:generate:test": "node scripts/compose-schema.mjs __test__/schema.header.prisma prisma/schema.sqlite.prisma __test__/schema.prisma && prisma generate --schema __test__/schema.prisma",
     "build:types": "tsc --project tsconfig.types.json",
     "prepack": "yarn build:types",
     "postpack": "node -e \"require('node:fs').rmSync('types', { recursive: true, force: true })\""
