@@ -14,9 +14,10 @@ const action = desktopNotificationAction({ notifier, title: "TimeFit" });
 `notifier.notify(options, callback)` may return a promise, which the action awaits. Any other
 return value is treated as a handle (node-notifier returns the notifier itself), and the action
 completes when the callback is called. A callback error fails the decision. The action passes
-`wait: true`, so node-notifier calls back after the user acts or after about 5 seconds, well
-within the engine's default 30-second plugin timeout. A notifier that neither returns a promise
-nor calls back ends as `plugin-timeout`.
+`wait: true`; when node-notifier calls back after that depends on the platform's notifier
+(typically after the user acts or after a timeout of a few seconds). If it has not called back
+within the engine's `pluginTimeoutMs` (default 30 seconds), the decision fails with
+`plugin-timeout`, as it does for a notifier that neither returns a promise nor calls back.
 
 The application constructs vendor clients and passes them to `twilioSmsAction` or
 `mailjetEmailAction`. This package does not import vendor SDKs, read environment variables, or

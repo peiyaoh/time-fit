@@ -27,10 +27,12 @@ evaluation in the same tick looked like an adapter retry, and the action ran twi
 record.
 
 ### 2. A failing decision does not release the tick early
-When one decision's work rejects unexpectedly (a bug, or a faulty injected `random`), the
-engine:
-1. starts no further decisions in that tick;
-2. waits for every decision already started to settle;
+The engine works through a page of participants with up to `options.concurrency` participants
+in flight, evaluating each participant's due decisions in order. When one participant's work
+rejects unexpectedly (a bug, or a faulty injected `random`), the engine:
+1. starts work for no further participants in that tick;
+2. waits for every participant already started to finish its current sequence of decisions
+   (each of those decisions is still claimed at most once);
 3. then rejects the tick with the first observed failure, even when that failure is
    `undefined`, `null` or `false`.
 

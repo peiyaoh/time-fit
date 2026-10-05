@@ -105,3 +105,12 @@ test("a participant without attributes is ineligible for an attributes.* eligibi
   expect(summary.counts).toMatchObject({ ineligible: 1, completed: 0 });
   expect(record).toBeUndefined();
 });
+
+test("mailjet: the recipient is redacted from a provider error in both the record and the log", async () => {
+  const email = nestedParticipant.attributes.email;
+  const client = { post: () => ({ request: async (body) => { const to = body.Messages[0].To[0].Email; throw new Error(`"${to}" is an invalid email address (${to})`); } }) };
+  const action = mailjetEmailAction({ client, from: { email: "study@example.test", name: "Study" }, emailPath: "attributes.email" });
+  const { record, logged } = await runOnce({ action, participant: nestedParticipant, params: { subject: "Break", text: "x" } });
+  expect(record.error).toEqual({ code: "mailjet-send-failed", message: '"[recipient]" is an invalid email address ([recipient])' });
+  expect(JSON.stringify(logged.find(({ event }) => event === "decision-action-failed"))).not.toContain(email);
+});

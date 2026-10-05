@@ -184,3 +184,28 @@ describe("stored payloads are detached JSON (ADR 0013)", () => {
     expect(record.result.delivery).toEqual({ id: "m1", at: "2026-09-22T09:00:00.000Z", nested: { n: 1 } });
   });
 });
+
+describe("failure granularity (ADR 0013 §2)", () => {
+  test("a participant already started finishes its own decisions; no new participant starts", async () => {
+    const store = createMemoryStore({ participants: ["a", "b", "c"].map((id) => ({ id, timeZone: "UTC" })) });
+    const calls = [];
+    let release;
+    const action = {
+      type: "hold",
+      execute: async (_params, ctx) => {
+        calls.push(`${ctx.participant.id}:${ctx.taskId}`);
+        if (ctx.taskId === "first") await new Promise((resolve) => { release = resolve; });
+        return { ok: true };
+      },
+    };
+    const task = (id, priority) => ({ id, scope: "participant", priority, checkpoints: [{ id: "nine", time: "09:00" }], outcomes: [{ id: "send", probability: 0.5, action: { type: "hold" } }, { id: "none", probability: 0.5, action: null }] });
+    let draws = 0;
+    const engine = createTimeEngine({ storage: store, tasks: [task("first", 1), task("second", 2)], actions: [action], random: () => (++draws === 2 ? 2 : 0), options: { concurrency: 2 } });
+    const pending = engine.tick(NINE).catch((error) => error);
+    await flush();
+    expect(calls).toEqual(["a:first"]);
+    release();
+    expect(await pending).toBeInstanceOf(TypeError);
+    expect(calls).toEqual(["a:first", "a:second"]);
+  });
+});
