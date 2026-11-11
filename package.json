@@ -2,31 +2,28 @@
   "name": "time-fit",
   "version": "0.1.0",
   "type": "module",
-  "private": true,
+  "license": "BSD-3-Clause",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "contrib/legacy/*",
+    "contrib/legacy/fitbit-break"
   ],
   "scripts": {
-    "index": "node ./src/index.js",
     "example1": "node ./apps/take-a-break/index.js",
-    "example2": "node ./apps/fitbit-break/index.js",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest"
-  },
-  "dependencies": {
-    "@prisma/client": "^6.5.0",
-    "cron-parser": "^5.0.6",
-    "json-difference": "^1.16.1",
-    "luxon": "^3.6.0",
-    "mongodb-memory-server": "^10.1.4",
-    "node-notifier": "^10.0.1",
-    "seedrandom": "^3.0.5",
-    "twilio": "^5.5.1",
-    "voca": "^1.4.1"
+    "test": "yarn workspace @time-fit/storage-prisma prisma:generate:test && cross-env TZ=America/New_York NODE_OPTIONS=--experimental-vm-modules jest",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "build:types": "yarn workspaces foreach -A --include '@time-fit/core' --include '@time-fit/storage-prisma' --include '@time-fit/integrations' run build:types",
+    "check:licenses": "node scripts/check-published-dependency-licenses.mjs"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "cross-env": "^7.0.3",
+    "dependency-cruiser": "^16.10.4",
     "jest": "^29.7.0",
-    "prisma": "^6.5.0"
-  }
+    "prisma": "^6.5.0",
+    "typescript": "^5.9.3"
+  },
+  "packageManager": "yarn@4.13.0"
 }

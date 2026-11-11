@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # One grouped root entry covers Yarn workspaces; legacy bumps may appear and follow frozen-legacy policy.
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      development-tools:
+        dependency-type: development
+      production-dependencies:
+        dependency-type: production
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]

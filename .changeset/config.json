@@ -1,0 +1,22 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "access": "public",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": [
+    "take-a-break",
+    "fitbit-break",
+    "@time-fit/action-collection",
+    "@time-fit/api-handlers",
+    "@time-fit/app-utils",
+    "@time-fit/condition-collection",
+    "@time-fit/database",
+    "@time-fit/fitbit-integration",
+    "@time-fit/helper",
+    "@time-fit/mongodb-helper",
+    "@time-fit/time-engine",
+    "@time-fit/web-components"
+  ]
+}

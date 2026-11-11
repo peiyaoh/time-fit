@@ -1,0 +1,6 @@
+{
+  "name": "time-fit-prisma-example",
+  "license": "BSD-3-Clause",
+  "private": true,
+  "type": "module"
+}

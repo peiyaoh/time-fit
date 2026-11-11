@@ -1,0 +1,767 @@
+{
+  "$comment": "ADR 0006. Each case contains exactly one violation. validateTaskSpec(spec, context) must return ok, or an error whose code equals `expect`. Default context: preferenceResolver=true, fixture plugins registered (see README).",
+  "cases": [
+    {
+      "name": "valid-participant-task",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ]
+      },
+      "expect": "ok"
+    },
+    {
+      "name": "valid-system-task",
+      "spec": {
+        "id": "take-a-break",
+        "scope": "system",
+        "timeZone": "America/Detroit",
+        "checkpoints": [
+          {
+            "id": "every-30",
+            "cron": "*/30 * * * 1-5"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "notify",
+            "probability": 1,
+            "action": {
+              "type": "fixture-record"
+            }
+          }
+        ]
+      },
+      "expect": "ok"
+    },
+    {
+      "name": "valid-precondition-tree",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ],
+        "precondition": {
+          "all": [
+            {
+              "condition": {
+                "type": "fixture-met"
+              }
+            },
+            {
+              "not": {
+                "condition": {
+                  "type": "fixture-not-met"
+                }
+              }
+            },
+            {
+              "any": [
+                {
+                  "condition": {
+                    "type": "fixture-met"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "expect": "ok"
+    },
+    {
+      "name": "unknown-top-level-field",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ],
+        "preActivationLogging": true
+      },
+      "expect": "unknown-field"
+    },
+    {
+      "name": "bad-id",
+      "spec": {
+        "id": "Walk Prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ]
+      },
+      "expect": "invalid-id"
+    },
+    {
+      "name": "missing-scope",
+      "spec": {
+        "id": "walk-prompt",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ]
+      },
+      "expect": "invalid-scope"
+    },
+    {
+      "name": "system-without-timezone",
+      "spec": {
+        "id": "take-a-break",
+        "scope": "system",
+        "checkpoints": [
+          {
+            "id": "every-30",
+            "cron": "*/30 * * * 1-5"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "notify",
+            "probability": 1,
+            "action": {
+              "type": "fixture-record"
+            }
+          }
+        ]
+      },
+      "expect": "invalid-time-zone"
+    },
+    {
+      "name": "system-fixed-offset-zone",
+      "spec": {
+        "id": "take-a-break",
+        "scope": "system",
+        "timeZone": "+05:00",
+        "checkpoints": [
+          {
+            "id": "every-30",
+            "cron": "*/30 * * * 1-5"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "notify",
+            "probability": 1,
+            "action": {
+              "type": "fixture-record"
+            }
+          }
+        ]
+      },
+      "expect": "invalid-time-zone"
+    },
+    {
+      "name": "participant-with-timezone",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ],
+        "timeZone": "UTC"
+      },
+      "expect": "time-zone-not-allowed"
+    },
+    {
+      "name": "no-checkpoints",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ]
+      },
+      "expect": "invalid-checkpoint"
+    },
+    {
+      "name": "duplicate-checkpoint-ids",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "a",
+            "time": "09:00"
+          },
+          {
+            "id": "a",
+            "time": "10:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ]
+      },
+      "expect": "invalid-checkpoint"
+    },
+    {
+      "name": "preference-without-resolver",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "wake",
+            "preference": "wakeupTime"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ]
+      },
+      "context": {
+        "preferenceResolver": false
+      },
+      "expect": "missing-preference-resolver"
+    },
+    {
+      "name": "preference-with-resolver",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "wake",
+            "preference": "wakeupTime"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ]
+      },
+      "context": {
+        "preferenceResolver": true
+      },
+      "expect": "ok"
+    },
+    {
+      "name": "probabilities-not-summing-to-1",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "a",
+            "probability": 0.5,
+            "action": null
+          },
+          {
+            "id": "b",
+            "probability": 0.4,
+            "action": null
+          }
+        ]
+      },
+      "expect": "invalid-outcomes"
+    },
+    {
+      "name": "probability-negative",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "a",
+            "probability": 1.5,
+            "action": null
+          },
+          {
+            "id": "b",
+            "probability": -0.5,
+            "action": null
+          }
+        ]
+      },
+      "expect": "invalid-outcomes"
+    },
+    {
+      "name": "outcome-missing-id",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "probability": 1,
+            "action": null
+          }
+        ]
+      },
+      "expect": "invalid-outcomes"
+    },
+    {
+      "name": "sum-within-tolerance",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "o0",
+            "probability": 0.1,
+            "action": null
+          },
+          {
+            "id": "o1",
+            "probability": 0.1,
+            "action": null
+          },
+          {
+            "id": "o2",
+            "probability": 0.1,
+            "action": null
+          },
+          {
+            "id": "o3",
+            "probability": 0.1,
+            "action": null
+          },
+          {
+            "id": "o4",
+            "probability": 0.1,
+            "action": null
+          },
+          {
+            "id": "o5",
+            "probability": 0.1,
+            "action": null
+          },
+          {
+            "id": "o6",
+            "probability": 0.1,
+            "action": null
+          },
+          {
+            "id": "o7",
+            "probability": 0.1,
+            "action": null
+          },
+          {
+            "id": "o8",
+            "probability": 0.1,
+            "action": null
+          },
+          {
+            "id": "o9",
+            "probability": 0.1,
+            "action": null
+          }
+        ]
+      },
+      "expect": "ok",
+      "note": "sums to 0.9999999999999999"
+    },
+    {
+      "name": "empty-all",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ],
+        "precondition": {
+          "all": []
+        }
+      },
+      "expect": "invalid-precondition"
+    },
+    {
+      "name": "too-deep",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ],
+        "precondition": {
+          "not": {
+            "not": {
+              "not": {
+                "not": {
+                  "not": {
+                    "not": {
+                      "not": {
+                        "not": {
+                          "not": {
+                            "condition": {
+                              "type": "fixture-met"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "expect": "invalid-precondition",
+      "note": "depth 10 > 8"
+    },
+    {
+      "name": "unknown-condition-type",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ],
+        "precondition": {
+          "condition": {
+            "type": "does-not-exist"
+          }
+        }
+      },
+      "expect": "unknown-plugin-type"
+    },
+    {
+      "name": "unknown-action-type",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "a",
+            "probability": 1,
+            "action": {
+              "type": "does-not-exist"
+            }
+          }
+        ]
+      },
+      "expect": "unknown-plugin-type"
+    },
+    {
+      "name": "plugin-validate-fails",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ],
+        "precondition": {
+          "condition": {
+            "type": "fixture-met",
+            "rejectParams": true
+          }
+        }
+      },
+      "expect": "plugin-params-invalid"
+    },
+    {
+      "name": "active-range-inverted",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ],
+        "activeFrom": "2026-10-01T00:00:00.000Z",
+        "activeUntil": "2026-09-01T00:00:00.000Z"
+      },
+      "expect": "invalid-active-range"
+    },
+    {
+      "name": "eligibility-bad-mode",
+      "spec": {
+        "id": "walk-prompt",
+        "scope": "participant",
+        "checkpoints": [
+          {
+            "id": "morning",
+            "time": "09:00"
+          }
+        ],
+        "outcomes": [
+          {
+            "id": "prompt",
+            "probability": 0.5,
+            "action": {
+              "type": "fixture-record"
+            }
+          },
+          {
+            "id": "control",
+            "probability": 0.5,
+            "action": null
+          }
+        ],
+        "eligibility": {
+          "attributes": {
+            "mode": "some",
+            "match": {
+              "arm": [
+                "A"
+              ]
+            }
+          }
+        }
+      },
+      "expect": "invalid-eligibility"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+// Test-only client header. scripts/compose-schema.mjs appends the models of
+// prisma/schema.sqlite.prisma to it and writes __test__/schema.prisma (not tracked).
+// The local output keeps the test client from overwriting the legacy Mongo client.
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}

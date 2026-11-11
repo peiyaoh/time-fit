@@ -1,0 +1,58 @@
+{
+  "name": "@time-fit/core",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Time-based JITAI engine core: task specs, scheduling, decision identity, and randomization",
+  "type": "module",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peiyaoh/time-fit.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/peiyaoh/time-fit/tree/main/packages/core#readme",
+  "bugs": "https://github.com/peiyaoh/time-fit/issues",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./memory": {
+      "types": "./types/memory/index.d.ts",
+      "default": "./src/memory/index.js"
+    },
+    "./testing": {
+      "types": "./types/testing/index.d.ts",
+      "default": "./src/testing/index.js"
+    }
+  },
+  "files": [
+    "src",
+    "types",
+    "/README.md",
+    "/LICENSE"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
+    "benchmark": "node ./bench/tick-benchmark.mjs",
+    "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "build:types": "tsc --project tsconfig.types.json",
+    "prepack": "yarn build:types",
+    "postpack": "node -e \"require('node:fs').rmSync('types', { recursive: true, force: true })\""
+  },
+  "dependencies": {
+    "cron-parser": "^5.0.6",
+    "luxon": "^3.6.0",
+    "seedrandom": "^3.0.5"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "typescript": "^5.9.3"
+  }
+}

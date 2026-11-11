@@ -1,71 +1,87 @@
-# Example 1: Nudge yourself to take a break every 30 minutes during week days
+# Example 1: Nudge yourself to take a break every 30 minutes on weekdays
 
-In this example, we will create a simple nudging intervention that sends a message to you through desktop notification every 30 minutes during week days to remind you to take a break from your screen.
+This example sends you a desktop notification every 30 minutes on weekdays (in your time
+zone) reminding you to take a break from your screen. It needs no database: tasks and
+decision records live in memory.
 
-You can run this example by running the following command in the project folder:
+The complete code is [`apps/take-a-break/index.js`](../apps/take-a-break/index.js). Run it
+from the project folder with:
 
-```
+```bash
 yarn example1
 ```
 
+## Step by step
 
-## How to
+### Step 1: Import the engine, a store, and a delivery action
 
-Here is the step by step guide to create this example.
-
-### Create the app
-
-Create a folder called my-app1 under /apps and create an index.js file inside the /apps/my-app1 folder.
-
-### Step 1: Import TimeEngine
-
-In TimeFit, the TimeEngine is the main entry point of the framework. It is responsible for managing the execution of everything (or "tasks"). You will do everything through TimeEngine.
-
+`@time-fit/core` provides the engine, `@time-fit/core/memory` an in-memory store, and
+`@time-fit/integrations/desktop` a desktop-notification action. The action takes a notifier
+you supply ([`node-notifier`](https://github.com/mikaelbr/node-notifier) here), so the
+library itself has no dependency on it.
 
 ```javascript
-import TimeEngine from "../time-engine/TimeEngine.js";
+import notifier from "node-notifier";
+import { createTimeEngine } from "@time-fit/core";
+import { createMemoryStore } from "@time-fit/core/memory";
+import { desktopNotificationAction } from "@time-fit/integrations/desktop";
 ```
-### Step 2: Register an action that will send you a desktop notification
 
-First, import the `DesktopNotificationAction` provided by the framework.
+### Step 2: Describe the task
 
-Second, create an instance using `new` and supply the title and mesasge parameters of the notification.
-
-Third, register this action to the engine and give it a label, "take-a-break-message." You can use this label later when creating a task that specifies when such action should be carried out.
-
+A task says **when** to decide (checkpoints) and **what** to do (outcomes). This one is a
+`"system"` task: it runs once per checkpoint, not once per participant, so it must name the
+time zone its schedule is evaluated in. The cron expression `*/30 * * * 1-5` means "every 30
+minutes, Monday to Friday", evaluated in `America/Detroit`.
 
 ```javascript
-import DesktopNotificationAction from "../action-collection/DesktopNotificationAction.js";
-
-const newAction = new DesktopNotificationAction(
-  "TimeFit",
-  "It's 30 minutes already. Take a break from your screen!"
-);
-
-TimeEngine.registerAction("take-a-break-message", newAction);
+const TASK = {
+  id: "take-a-break",
+  scope: "system",
+  timeZone: "America/Detroit",
+  checkpoints: [{ id: "weekday-half-hour", cron: "*/30 * * * 1-5" }],
+  outcomes: [
+    {
+      id: "notify",
+      probability: 1,
+      action: { type: "desktop-notification", message: "It's 30 minutes already. Take a break from your screen!" },
+    },
+  ],
+};
 ```
 
-### Step 3: Register a new task that will be executed periodically (every 30 minutes)
+`outcomes` can hold several options with probabilities that sum to 1. The engine picks one
+per decision with a reproducible random draw, which is how micro-randomized trials are built.
+Here there is only one outcome, so it always notifies.
 
-In TimeFit, all the logic is defined in the form of tasks. For simplicity, we wil use a system task that is provided by the framework to execute an action periodically. You can also create user tasks that will be executed for each user at a certain time.
+### Step 3: Create the engine
 
-In this example, we will register a system task using `registerOneSystemTaskWithCronAction`, which creates a task that will be executed at a certain time. We will supply the task label, the cron expression that determines the timing of the action, and the label of the action to be executed. Since we already register an action, "take-a-break-message", earlier, we can simply refers to this action by its label when registering the task.
+Give the engine a store and the actions your tasks use. The configuration is validated
+immediately; a mistake throws an `EngineConfigError` that lists every problem.
 
 ```javascript
-TimeEngine.registerOneSystemTaskWithCronAction(
-  "take-a-break",
-  "*/30 * * * 1-5",
-  "take-a-break-message"
-);
+const storage = createMemoryStore({ tasks: [TASK] });
+const engine = createTimeEngine({
+  storage,
+  actions: [desktopNotificationAction({ notifier, title: "TimeFit" })],
+});
 ```
 
-### Step 4: Run the app
+### Step 4: Run it
 
-Finally, we will start the time engine to begin the nudging intervention.
+`engine.start()` evaluates the schedule at every minute boundary. If you drive scheduling
+yourself (for example from an external cron job or a serverless function), call
+`await engine.tick(new Date())` instead. It returns a summary of what happened.
 
 ```javascript
-TimeEngine.start();
+engine.start();
 ```
 
-### References
-- Complete code example: [take-a-break.js](../apps/take-a-break/index.js)
+## Where to go next
+
+- [`examples/quickstart`](quickstart/index.mjs): a participant-scoped task with a randomized
+  "remind" vs. "control" outcome, in about 20 lines.
+- [`examples/prisma`](prisma/): the same engine backed by a database via
+  `@time-fit/storage-prisma`.
+- [`docs/adr/`](../docs/adr/): the design decisions behind tasks, scheduling, and decision
+  records.

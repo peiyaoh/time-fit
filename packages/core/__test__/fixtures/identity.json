@@ -1,0 +1,221 @@
+{
+  "$comment": "ADR 0004. Goldens pin the identity, version, seed and arm algorithms; any change is a breaking change to recorded data.",
+  "decisionIds": [
+    {
+      "input": {
+        "subject": "p:alice",
+        "taskId": "walk-prompt",
+        "checkpointId": "morning",
+        "scheduledAt": "2026-03-09T13:00:00.000Z"
+      },
+      "decisionId": "f011f5907e3e40da7d58a19fa2c9f119ee4321f3a7f47c5d216112334136c727"
+    },
+    {
+      "input": {
+        "subject": "p:system",
+        "taskId": "walk-prompt",
+        "checkpointId": "morning",
+        "scheduledAt": "2026-03-09T13:00:00.000Z"
+      },
+      "decisionId": "1b7668594c6388792c0354197a20b3ec1ed12c97bb6ab14b6c7897771d41a871"
+    },
+    {
+      "input": {
+        "subject": "s:system",
+        "taskId": "take-a-break",
+        "checkpointId": "every-30",
+        "scheduledAt": "2026-09-22T14:30:00.000Z"
+      },
+      "decisionId": "dfb0dbf7b839114f08b160f9593b18e558641e4021f39fac3908363e280321a2"
+    }
+  ],
+  "decisionIdNotes": [
+    "p:system (a participant literally named 'system') and s:system (system scope) must differ"
+  ],
+  "taskVersion": {
+    "specA": {
+      "id": "t",
+      "scope": "system",
+      "timeZone": "America/Detroit",
+      "checkpoints": [
+        {
+          "id": "c",
+          "cron": "0 9 * * *"
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "a",
+          "probability": 1,
+          "action": null
+        }
+      ]
+    },
+    "specB_sameContentDifferentKeyOrder": {
+      "outcomes": [
+        {
+          "action": null,
+          "probability": 1,
+          "id": "a"
+        }
+      ],
+      "checkpoints": [
+        {
+          "cron": "0 9 * * *",
+          "id": "c"
+        }
+      ],
+      "timeZone": "America/Detroit",
+      "scope": "system",
+      "id": "t"
+    },
+    "canonicalOfSpecA_beforeDefaults": "{\"checkpoints\":[{\"cron\":\"0 9 * * *\",\"id\":\"c\"}],\"id\":\"t\",\"outcomes\":[{\"action\":null,\"id\":\"a\",\"probability\":1}],\"scope\":\"system\",\"timeZone\":\"America/Detroit\"}",
+    "sha256OfCanonical_beforeDefaults": "1ca8efc408e71ee9404ffde84f0b239c7113e503357b911348a2d8d0f41fa8a6",
+    "note": "Real taskVersion hashes the spec AFTER defaults are applied (ADR 0004 \u00a72), so it will differ from sha256OfCanonical_beforeDefaults; the invariant to test is versionOf(specA) === versionOf(specB), and that the canonicalizer reproduces canonicalOfSpecA_beforeDefaults."
+  },
+  "seeds": [
+    {
+      "decisionId": "f011f5907e3e40da7d58a19fa2c9f119ee4321f3a7f47c5d216112334136c727",
+      "salt": null,
+      "seed": "f011f5907e3e40da7d58a19fa2c9f119ee4321f3a7f47c5d216112334136c727",
+      "draw": 0.43380247781113035
+    },
+    {
+      "decisionId": "f011f5907e3e40da7d58a19fa2c9f119ee4321f3a7f47c5d216112334136c727",
+      "salt": "study-secret-1",
+      "seed": "d725d2a6a6ae10b8d43e8e86f4be76a1f75c82214a61985be1de23a8a2b7c4d4",
+      "draw": 0.17774233976914122
+    }
+  ],
+  "armSelection": [
+    {
+      "draw": 0.43380247781113035,
+      "outcomes": [
+        {
+          "id": "prompt",
+          "probability": 0.6
+        },
+        {
+          "id": "control",
+          "probability": 0.4
+        }
+      ],
+      "armId": "prompt"
+    },
+    {
+      "draw": 0.0,
+      "outcomes": [
+        {
+          "id": "prompt",
+          "probability": 0.6
+        },
+        {
+          "id": "control",
+          "probability": 0.4
+        }
+      ],
+      "armId": "prompt"
+    },
+    {
+      "draw": 0.6,
+      "outcomes": [
+        {
+          "id": "prompt",
+          "probability": 0.6
+        },
+        {
+          "id": "control",
+          "probability": 0.4
+        }
+      ],
+      "armId": "control",
+      "note": "strict <: draw equal to cumulative 0.6 goes to the next arm"
+    },
+    {
+      "draw": 0.5999999,
+      "outcomes": [
+        {
+          "id": "prompt",
+          "probability": 0.6
+        },
+        {
+          "id": "control",
+          "probability": 0.4
+        }
+      ],
+      "armId": "prompt"
+    },
+    {
+      "draw": 0.9999999999,
+      "outcomes": [
+        {
+          "id": "prompt",
+          "probability": 0.6
+        },
+        {
+          "id": "control",
+          "probability": 0.4
+        }
+      ],
+      "armId": "control"
+    },
+    {
+      "draw": 0.9999999999999999,
+      "outcomes": [
+        {
+          "id": "o0",
+          "probability": 0.1
+        },
+        {
+          "id": "o1",
+          "probability": 0.1
+        },
+        {
+          "id": "o2",
+          "probability": 0.1
+        },
+        {
+          "id": "o3",
+          "probability": 0.1
+        },
+        {
+          "id": "o4",
+          "probability": 0.1
+        },
+        {
+          "id": "o5",
+          "probability": 0.1
+        },
+        {
+          "id": "o6",
+          "probability": 0.1
+        },
+        {
+          "id": "o7",
+          "probability": 0.1
+        },
+        {
+          "id": "o8",
+          "probability": 0.1
+        },
+        {
+          "id": "o9",
+          "probability": 0.1
+        }
+      ],
+      "armId": "o9",
+      "note": "draw is the largest double below 1; ten 0.1s sum to 0.9999999999999999 in doubles, so no cumulative exceeds the draw and the last outcome is the fallback"
+    },
+    {
+      "draw": null,
+      "outcomes": [
+        {
+          "id": "only",
+          "probability": 1
+        }
+      ],
+      "armId": "only",
+      "note": "single outcome: no draw"
+    }
+  ]
+}
