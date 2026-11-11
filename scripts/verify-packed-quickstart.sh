@@ -20,7 +20,11 @@ cd "$work_dir"
 assert_tarball_file() {
   local tarball="$1"
   local file="$2"
-  tar -tf "$work_dir/$tarball" | grep -qx "package/$file"
+  # Read the whole listing first: piping tar into `grep -q` fails under pipefail when grep
+  # exits on its first match while tar is still writing.
+  local listing
+  listing="$(tar -tf "$work_dir/$tarball")"
+  grep -qxF "package/$file" <<<"$listing"
 }
 
 assert_tarball_file "$core_tarball" "types/index.d.ts"
