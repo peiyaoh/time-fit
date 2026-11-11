@@ -184,16 +184,25 @@ function wallClockOccurrences(checkpoint, timeZone, from, to, timeForDate) {
   return instants;
 }
 
-// Luxon resolves a nonexistent (DST gap) local time forward by the gap and an ambiguous
-// (DST fold) one to its first occurrence, which is the ADR 0005 §2 policy.
+// ADR 0005 §2: a nonexistent (DST gap) local time moves forward by the gap, and an ambiguous
+// (DST fold) one resolves to its first occurrence.
 function localDateTimeMillis(localDate, localTime, timeZone) {
   const match = LOCAL_TIME_PATTERN.exec(localTime);
   if (match === null) throw new TypeError(`occurrences: invalid local time "${localTime}"`);
   const [, hour, minute] = match;
-  return DateTime.fromObject(
+  const resolved = DateTime.fromObject(
     { year: localDate.year, month: localDate.month, day: localDate.day, hour: Number(hour), minute: Number(minute) },
     { zone: timeZone },
-  ).toMillis();
+  );
+  return firstOccurrenceMillis(resolved);
+}
+
+// Luxon's fromObject picks between the two instants of a folded local time by using the zone's
+// offset at the current wall clock, so the same spec resolved in summer and in winter would give
+// different instants. Taking the earliest possible instant makes the result independent of when
+// the engine runs. Gap resolution does not depend on the wall clock.
+function firstOccurrenceMillis(localDateTime) {
+  return Math.min(...localDateTime.getPossibleOffsets().map((candidate) => candidate.toMillis()));
 }
 
 function candidateLocalDates(checkpoint, timeZone, from, to) {
